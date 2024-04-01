@@ -1,8 +1,8 @@
 # mhess42.github.io
 
-### Compiles and minifies for production
+### compiles and minifies for production
 ```
-npm run build
+vue build
 ```
 
 ### because i will forget
