@@ -3,6 +3,16 @@
 </template>
 
 <style>
+@font-face {
+  font-family: code;
+  src: url('@/assets/fonts/Monocode-Regular-V01.02b.ttf');
+}
+
+@font-face {
+  font-family: ubuntu;
+  src: url('@/assets/fonts/UbuntuMono-Regular.ttf');
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
