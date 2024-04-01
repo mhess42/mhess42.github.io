@@ -1,5 +1,10 @@
 <template>
-    <div>this is a home page</div>
+    <div>
+        this is a home page
+        asdf
+        asdfasd
+        fasdf
+    </div>
 </template>
 
 <script>
