@@ -231,8 +231,8 @@ export default {
             animate()
         },
         handleSwipe () {
-            if (this.touchYStart < this.touchYEnd) this.handleSegment(1)
-            if (this.touchYStart > this.touchYEnd) this.handleSegment(-1)
+            if (this.touchYStart > this.touchYEnd) this.handleSegment(1)
+            if (this.touchYStart < this.touchYEnd) this.handleSegment(-1)
         }
     },
     components: {
