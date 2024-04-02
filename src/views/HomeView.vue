@@ -24,7 +24,8 @@
 <script>
 import SegmentPiece from '@/components/SegmentPiece.vue'
 import * as THREE from 'three'
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js'
+// import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export default {
     name: 'HomeView',
@@ -32,6 +33,32 @@ export default {
         return {
             segmentIndex: 0,
             scrollStamp: 0,
+            touchYStart: 0,
+            touchYEnd: 0,
+            camera: {
+                posSpeed: 15,
+                rotSpeed: 1,
+                pos: {
+                    x: 0,
+                    y: 800,
+                    z: 1000
+                },
+                rot: {
+                    x: -20,
+                    y: 0,
+                    z: 0,
+                },
+                tPos: {
+                    x: 0,
+                    y: 800,
+                    z: 1000
+                },
+                tRot: {
+                    x: -20,
+                    y: 0,
+                    z: 0
+                }
+            }
         }
     },
     methods: {
@@ -39,14 +66,17 @@ export default {
             e.stopPropagation()
             if (e.timeStamp < this.scrollStamp + 1000) return
 
-            if (e.wheelDeltaY < -10) this.segmentIndex++
-            if (e.wheelDeltaY > 10) this.segmentIndex--
+            if (e.wheelDeltaY < -10) this.handleSegment(1)
+            if (e.wheelDeltaY > 10) this.handleSegment(-1)
+
+            this.scrollStamp = e.timeStamp
+        },
+        handleSegment (dir) {
+            this.segmentIndex += dir
 
             const numSegments = document.querySelectorAll('.segment-piece').length - 1
             if (this.segmentIndex < 0) this.segmentIndex = 0
             if (this.segmentIndex > numSegments) this.segmentIndex = numSegments
-
-            this.scrollStamp = e.timeStamp
         },
         changeBg (curr, old) {
             const oldColor = document.querySelector(`[index="${old}"]`).getAttribute('bg')
@@ -57,7 +87,9 @@ export default {
         initBg () {
             const container = document.querySelector('#bg')
 
-            const objLoader = new OBJLoader()
+            // const objLoader = new OBJLoader()
+            const gltfLoader = new GLTFLoader()
+            // const textureLoader = new THREE.TextureLoader()
 
             const scene = new THREE.Scene()
 
@@ -69,22 +101,23 @@ export default {
 
             scene.add(cameraPerspectiveHelper)
 
-            const cameraRig = new THREE.Group()
-            cameraRig.add(cameraPerspective)
+            // const cameraRig = new THREE.Group()
+            // cameraRig.add(cameraPerspective)
+            const cameraRig = cameraPerspective
 
             scene.add(cameraRig)
             
-            const ambientLight = new THREE.AmbientLight(0x00FFFF)
+            const ambientLight = new THREE.AmbientLight(0xFFFFFF)
             scene.add(ambientLight)
 
             const light = new THREE.DirectionalLight(0x00ff)
             scene.add(light)
 
-            const mesh = new THREE.Mesh(
-				new THREE.SphereGeometry(100, 16, 8),
-				new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true})
-			);
-            scene.add(mesh)
+            // const mesh = new THREE.Mesh(
+			// 	new THREE.SphereGeometry(100, 16, 8),
+			// 	new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true})
+			// );
+            // scene.add(mesh)
 
             const floor = new THREE.Mesh(
                 new THREE.PlaneGeometry(10000, 10000, 100, 100),
@@ -96,13 +129,30 @@ export default {
             scene.add(floor)
             floor.lookAt(0, 1, 0)
 
-            objLoader.load(
-                'assets/desk.obj',
+            gltfLoader.load(
+                'assets/models/desk.glb',
                 obj => {
+                    obj = obj.scene
                     scene.add(obj)
                     obj.scale.set(75, 75, 75)
-                    obj.rotateY(-3.14159 / 2)
-                    // obj.position.set(0, 0, -50)
+                    obj.rotateY(3.14159 / 2)
+                    obj.position.set(-45, 0, 50)
+                },
+                xhr => {
+                    console.log(xhr.loaded);
+                },
+                err => {
+                    console.log(err);
+                }
+            )
+
+            gltfLoader.load(
+                'assets/models/calc.glb',
+                obj => {
+                    obj = obj.scene
+                    scene.add(obj)
+                    obj.scale.set(5, 5, 5)
+                    obj.position.set(315, 310, 25)
                 },
                 xhr => {
                     console.log(xhr.loaded);
@@ -123,28 +173,66 @@ export default {
                 render()
             }
 
-            function render () {
-                mesh.position.z = 0
-                mesh.position.x = 0
-                mesh.position.y = 0
-                
-                cameraPerspective.position.set(0, 500, 1500)
+            const render = () => {
+                cameraPerspective.position.set(this.camera.pos.x, this.camera.pos.y, this.camera.pos.z)
                 cameraPerspective.near = .01
                 cameraPerspective.far = 5000 // mesh.position.length();
                 cameraPerspective.updateProjectionMatrix()
                 cameraPerspectiveHelper.update()
                 cameraPerspectiveHelper.visible = false
                 
-                cameraRig.lookAt(mesh.position)
-                // cameraRig.rotateZ(3.14159)
-                // cameraRig.rotateY(3.14159)
-                // cameraRig.rotateX(3.14159)
+                // cameraRig.lookAt(mesh.position)
+                cameraRig.rotation.set(
+                    this.camera.rot.x * (Math.PI / 180), 
+                    this.camera.rot.y * (Math.PI / 180), 
+                    this.camera.rot.z * (Math.PI / 180)
+                )
+
+                const planes = ['x', 'y', 'z']
+                planes.forEach(axis => {
+                    const pos = this.camera.pos
+                    const tPos = this.camera.tPos
+                    const rot = this.camera.rot
+                    const tRot = this.camera.tRot
+                    if (pos[axis] !== tPos[axis]) {
+                        if (pos[axis] > tPos[axis] && pos[axis] - this.camera.posSpeed <= tPos[axis]) {
+                            pos[axis] = tPos[axis]
+                            return
+                        }
+
+                        if (pos[axis] < tPos[axis] && pos[axis] + this.camera.posSpeed >= tPos[axis]) {
+                            pos[axis] = tPos[axis]
+                            return
+                        }
+
+                        if (pos[axis] > tPos[axis]) pos[axis] -= this.camera.posSpeed
+                        else pos[axis] += this.camera.posSpeed
+                    }
+                    if (rot[axis] !== tRot[axis]) {
+                        if (rot[axis] > tRot[axis] && rot[axis] - this.camera.rotSpeed <= tRot[axis]) {
+                            rot[axis] = tRot[axis]
+                            return
+                        }
+
+                        if (rot[axis] < tRot[axis] && rot[axis] + this.camera.rotSpeed >= tRot[axis]) {
+                            rot[axis] = tRot[axis]
+                            return
+                        }
+
+                        if (rot[axis] > tRot[axis]) rot[axis] -= this.camera.rotSpeed
+                        else rot[axis] += this.camera.rotSpeed
+                    }
+                })
 
                 renderer.setViewport( 0, 0, window.innerWidth, window.innerHeight );
                 renderer.render(scene, cameraPerspective)
             }
 
             animate()
+        },
+        handleSwipe () {
+            if (this.touchYStart < this.touchYEnd) this.handleSegment(1)
+            if (this.touchYStart > this.touchYEnd) this.handleSegment(-1)
         }
     },
     components: {
@@ -152,10 +240,46 @@ export default {
     },
     mounted () {
         this.initBg()
+        
+        document.addEventListener('touchstart', e => {
+            this.touchYStart = e.changedTouches[0].screenY
+        })
+
+        document.addEventListener('touchend', e => {
+            this.touchYEnd = e.changedTouches[0].screenY
+            this.handleSwipe()
+        })
     },
     watch: {
-        segmentIndex (old, curr) {
-            this.changeBg(old, curr)
+        segmentIndex (curr, old) {
+            this.changeBg(curr, old)
+
+            if (curr === 0) {
+                this.camera.tPos = {
+                    x: 0,
+                    y: 800,
+                    z: 1000
+                }
+                this.camera.tRot = {
+                    x: -20,
+                    y: 0,
+                    z: 0,
+                }
+            }
+
+            if (curr == 1) {
+                this.camera.tPos = {
+                    x: 400,
+                    y: 480,
+                    z: 30
+                }
+
+                this.camera.tRot = {
+                    x: -90,
+                    y: 0,
+                    z: 0
+                }
+            }
         }
     }
 }
