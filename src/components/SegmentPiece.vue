@@ -12,11 +12,12 @@ export default {
             // this.$el.style.backgroundColor = `rgba(${bg}, .2)`
         },
         handleScroll () {
-            this.$el.style.top = `-${(this.segmentindex - this.index) * 100}vh`
+            this.$el.style.top = `${(this.segmentindex - this.index) * -100}vh`
         }
     },
     mounted () {
         this.setBg()
+        this.handleScroll()
     },
     watch: {
         segmentindex () {

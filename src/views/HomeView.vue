@@ -13,20 +13,18 @@
                 <div>vvvvvvvvv</div>
             </div>
         </segment-piece>
-        <segment-piece bg="255, 0, 0" index="1">
-
+        <segment-piece bg="255, 0, 0" index="1" :segmentindex="segmentIndex">
+            <div>
+                there's like more info here
+            </div>
         </segment-piece>
     </div>
 </template>
 
 <script>
 import SegmentPiece from '@/components/SegmentPiece.vue'
-// @ts-ignore
 import * as THREE from 'three'
-// import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-// import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-// import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-// import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js'
 
 export default {
     name: 'HomeView',
@@ -59,6 +57,8 @@ export default {
         initBg () {
             const container = document.querySelector('#bg')
 
+            const objLoader = new OBJLoader()
+
             const scene = new THREE.Scene()
 
             const camera = new THREE.PerspectiveCamera(50, (window.innerWidth / window.innerHeight), 1, 10000)
@@ -77,16 +77,42 @@ export default {
             const ambientLight = new THREE.AmbientLight(0x00FFFF)
             scene.add(ambientLight)
 
-            const light = new THREE.DirectionalLight(0x00ff, 4.4)
+            const light = new THREE.DirectionalLight(0x00ff)
             scene.add(light)
 
             const mesh = new THREE.Mesh(
 				new THREE.SphereGeometry(100, 16, 8),
-				new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true })
+				new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true})
 			);
             scene.add(mesh)
 
-            const renderer = new THREE.WebGLRenderer({antialias: true});
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(10000, 10000, 100, 100),
+                new THREE.MeshBasicMaterial({color: 0xf90fff, side: THREE.DoubleSide, wireframe: true})
+            )
+            floor.position.x = 0
+            floor.position.y = 0
+            floor.position.z = 0
+            scene.add(floor)
+            floor.lookAt(0, 1, 0)
+
+            objLoader.load(
+                'assets/desk.obj',
+                obj => {
+                    scene.add(obj)
+                    obj.scale.set(75, 75, 75)
+                    obj.rotateY(-3.14159 / 2)
+                    // obj.position.set(0, 0, -50)
+                },
+                xhr => {
+                    console.log(xhr.loaded);
+                },
+                err => {
+                    console.log(err);
+                }
+            )
+
+            const renderer = new THREE.WebGLRenderer({antialias: true, gammaOutput: true, alpha: true});
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setClearColor( 0xfb97e6, 0);
@@ -98,17 +124,21 @@ export default {
             }
 
             function render () {
-                mesh.position.z = 700
-                mesh.position.x = 700
-                mesh.position.y = 700
+                mesh.position.z = 0
+                mesh.position.x = 0
+                mesh.position.y = 0
                 
-                cameraPerspective.far = mesh.position.length();
+                cameraPerspective.position.set(0, 500, 1500)
+                cameraPerspective.near = .01
+                cameraPerspective.far = 5000 // mesh.position.length();
                 cameraPerspective.updateProjectionMatrix()
                 cameraPerspectiveHelper.update()
                 cameraPerspectiveHelper.visible = false
                 
                 cameraRig.lookAt(mesh.position)
-                cameraRig.rotateX(3.14159)
+                // cameraRig.rotateZ(3.14159)
+                // cameraRig.rotateY(3.14159)
+                // cameraRig.rotateX(3.14159)
 
                 renderer.setViewport( 0, 0, window.innerWidth, window.innerHeight );
                 renderer.render(scene, cameraPerspective)
