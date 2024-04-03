@@ -29,11 +29,11 @@ export default {
 
 <style scoped>
 .segment-piece {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     position: fixed;
     top: 0px;
     left: 0px;
-    transition: all .2s ease-in-out;
+    transition: all 1s ease-in-out;
 }
 </style>

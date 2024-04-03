@@ -5,7 +5,7 @@
 vue build
 ```
 
-### because i will forget
+### starts local server
 ```
-git subtree --prefix dist push origin dist
+vue serve
 ```
