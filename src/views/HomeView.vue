@@ -14,18 +14,33 @@
             </div>
         </segment-piece>
         <segment-piece bg="255, 0, 0" index="1" :segmentindex="segmentIndex">
-            <div id="calculator-text">
+            <div class="segment-text" id="calculator-text">
                 i started my programming journey in middle school when i found a graphing calculator at a thrift store for $5.
                 at the time i was only interested in it because it let me play games in math class, but it served as a good introduction to code and how programs run.
                 for the next 7 years i spent most of my time in math and chemistry making games on my calculator.
             </div>
         </segment-piece>
         <segment-piece bg="0, 255, 0" index="2" :segmentindex="segmentIndex">
-            <div id="commodore-text">
+            <div class="segment-text" id="commodore-text">
                 noticing my interest in the basic programming language, and being a programmer himself, my dad introduced me to his old commodore 64.
                 i mainly just ran old floppy disks he had laying around, but i also followed a good handful of c64 basic tutorials from old magazines.
                 it was around this same time my father showed me some of his programming books. i read books about data structures and other boring stuff during off campus sports events.
                 at the beginning of high school i even carried a regular expressions reference book in my backpack.
+            </div>
+        </segment-piece>
+        <segment-piece bg="255, 255, 0" index="3" :segmentindex="segmentIndex">
+            <div class="segment-text" id="book-text">
+                palceholder for books
+            </div>
+        </segment-piece>
+        <segment-piece bg="255, 0, 255" index="4" :segmentindex="segmentIndex">
+            <div class="segment-text" id="laptop-text">
+                placeholder for laptop
+            </div>
+        </segment-piece>
+        <segment-piece bg="0, 255, 255" index="5" :segmentindex="segmentIndex">
+            <div class="segment-text" id="monitor text">
+                placehilder for monitor
             </div>
         </segment-piece>
     </div>
@@ -246,6 +261,23 @@ export default {
                 }
             )
 
+            gltfLoader.load(
+                'assets/models/monitor.glb',
+                obj => {
+                    obj = obj.scene
+                    scene.add(obj)
+                    obj.scale.set(.35, .35, .35)
+                    obj.position.set(220, 322, -140)
+                    obj.rotateY(-100 * (Math.PI / 180))
+                },
+                xhr => {
+                    console.log(xhr.loaded);
+                },
+                err => {
+                    console.log(err);
+                }
+            )
+
             const renderer = new THREE.WebGLRenderer({antialias: true, gammaOutput: true, alpha: true});
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -442,6 +474,32 @@ export default {
                     }
                 }
             }
+
+            if (curr == 3) {
+                if (!this.mobile) {
+                    this.camera.tPos = {
+                        x: 550,
+                        y: 700,
+                        z: 300
+                    }
+                    this.camera.tRot = {
+                        x: -10,
+                        y: -30,
+                        z: -5
+                    }
+                } else {
+                    this.camera.tPos = {
+                        x: 550,
+                        y: 900,
+                        z: 300
+                    }
+                    this.camera.tRot = {
+                        x: -10,
+                        y: -30,
+                        z: -5
+                    }
+                }
+            }
         }
     }
 }
@@ -486,7 +544,7 @@ export default {
     padding-bottom: 45vh;
 }
 
-#calculator-text, #commodore-text {
+.segment-text {
     width: calc(40vw - 20vh);
     height: 60vh;
     position: absolute;
@@ -509,8 +567,14 @@ export default {
     left: 10vh;
 }
 
-@media screen and (max-device-width: 420px) {
-    #calculator-text, #commodore-text {
+#book-text {
+    background-color: rgba(0, 255, 0, .6);
+    right: 10vh;
+    width: calc(30vw - 20vh)
+}
+
+@media screen and (max-device-width: 1000px) {
+    .segment-text {
         width: 90vw;
         left: 0px;
         padding: 5vw;
@@ -525,6 +589,13 @@ export default {
     #commodore-text {
         height: 50vh;
         top: 0px;
+        left: 0px;
+    }
+
+    #book-text {
+        height: 60vh;
+        top: 0px;
+        right: 0px;
     }
 }
 </style>
