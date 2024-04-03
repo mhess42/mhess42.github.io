@@ -117,24 +117,31 @@ export default {
             const ambientLight = new THREE.AmbientLight(0xFFFFFF)
             scene.add(ambientLight)
 
-            const light = new THREE.DirectionalLight(0x00ff)
-            scene.add(light)
-
-            // const mesh = new THREE.Mesh(
-			// 	new THREE.SphereGeometry(100, 16, 8),
-			// 	new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true})
-			// );
-            // scene.add(mesh)
-
+            const carpetText = new THREE.TextureLoader().load('assets/textures/carpet.jpg')
+            carpetText.wrapS = THREE.RepeatWrapping
+            carpetText.wrapT = THREE.RepeatWrapping
+            carpetText.repeat.set(45, 45)
             const floor = new THREE.Mesh(
                 new THREE.PlaneGeometry(10000, 10000, 100, 100),
-                new THREE.MeshBasicMaterial({color: 0xf90fff, side: THREE.DoubleSide, wireframe: true})
+                new THREE.MeshBasicMaterial({side: THREE.DoubleSide, wireframe: false, map: carpetText})
             )
             floor.position.x = 0
             floor.position.y = 0
             floor.position.z = 0
             scene.add(floor)
             floor.lookAt(0, 1, 0)
+
+            const woodText = new THREE.TextureLoader().load('assets/textures/wood4.jpg')
+            woodText.wrapS = THREE.RepeatWrapping
+            woodText.wrapT = THREE.RepeatWrapping
+            woodText.repeat.set(45, 45)
+            const backWall = new THREE.Mesh(
+                new THREE.PlaneGeometry(10000, 10000, 100, 100),
+                new THREE.MeshBasicMaterial({map: woodText, side: THREE.DoubleSide, wireframe: false})
+            )
+            backWall.position.z = -400
+            scene.add(backWall)
+            backWall.lookAt(0, 0, 1)
 
             gltfLoader.load(
                 'assets/models/desk.glb',
@@ -206,6 +213,39 @@ export default {
                 }
             )
 
+            gltfLoader.load(
+                'assets/models/bookshelf.glb',
+                obj => {
+                    obj = obj.scene
+                    scene.add(obj)
+                    obj.scale.set(400, 400, 400)
+                    obj.position.set(700, 0, -200)
+                },
+                xhr => {
+                    console.log(xhr.loaded);
+                },
+                err => {
+                    console.log(err);
+                }
+            )
+
+            gltfLoader.load(
+                'assets/models/laptop.glb',
+                obj => {
+                    obj = obj.scene
+                    scene.add(obj)
+                    obj.scale.set(100, 100, 100)
+                    obj.position.set(20, 280, -90)
+                    obj.rotateY(180 * (Math.PI / 180))
+                },
+                xhr => {
+                    console.log(xhr.loaded);
+                },
+                err => {
+                    console.log(err);
+                }
+            )
+
             const renderer = new THREE.WebGLRenderer({antialias: true, gammaOutput: true, alpha: true});
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -254,30 +294,21 @@ export default {
                         else pos[axis] += this.camera.posSpeed
                     }
                     if (rot[axis] !== tRot[axis]) {
-                        // let worldVector
-                        // if (axis === 'x') worldVector = new THREE.Vector3(1, 0, 0)
-                        // if (axis === 'y') worldVector = new THREE.Vector3(0, 1, 0)
-                        // if (axis === 'z') worldVector = new THREE.Vector3(0, 0, 1)
-
                         if (rot[axis] > tRot[axis] && rot[axis] - this.camera.rotSpeed <= tRot[axis]) {
                             rot[axis] = tRot[axis]
-                            // cameraPerspective.rotateOnWorldAxis(worldVector, (rot[axis] - tRot[axis]) * (Math.PI / 180))
                             return
                         }
 
                         if (rot[axis] < tRot[axis] && rot[axis] + this.camera.rotSpeed >= tRot[axis]) {
                             rot[axis] = tRot[axis]
-                            // cameraPerspective.rotateOnWorldAxis(worldVector, (rot[axis] - tRot[axis]) * (Math.PI / 180))
                             return
                         }
 
 
                         if (rot[axis] > tRot[axis]) {
                             rot[axis] -= this.camera.rotSpeed
-                            // cameraRig.rotateOnWorldAxis(worldVector, THREE.MathUtils.degToRad(-this.camera.rotSpeed - 1))
                         } else {
                             rot[axis] += this.camera.rotSpeed
-                            // cameraRig.rotateOnWorldAxis(worldVector, THREE.MathUtils.degToRad(this.camera.rotSpeed - 1))
                         } 
                     }
                 })
