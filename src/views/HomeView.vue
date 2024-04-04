@@ -1,4 +1,5 @@
 <template>
+    <!-- #region segments -->
     <div class="home-wrapper" @wheel.prevent="scrollSegment">
         <!-- background for three.js to render to -->
         <div id="bg"></div>
@@ -51,6 +52,7 @@
             </div>
         </segment-piece>
     </div>
+    <!-- #endregion segments -->
 </template>
 
 <script>
@@ -112,7 +114,7 @@ export default {
             }
         }
     },
-    // #endregion
+    // #endregion data
     // #region methods
     methods: {
         // called by wheel event, detects page scroll
@@ -140,6 +142,7 @@ export default {
             console.log(oldColor, currColor);
             document.querySelector('.home-wrapper').style.backgroundColor = `rgba(${currColor}, .2)`
         },
+        // #region initBg
         // initializes the three.js background
         initBg () {
             // glb/gltf model loader
@@ -171,6 +174,7 @@ export default {
             /**
              * geometry
              */
+            // #region geometry
 
             // load carpet texture and apply to floor plane geometry
             const carpetText = new THREE.TextureLoader().load('assets/textures/carpet.jpg')
@@ -200,9 +204,12 @@ export default {
             scene.add(backWall)
             backWall.lookAt(0, 0, 1)
 
+            // #endregion geometry
+
             /**
              * models
              */
+            // #region models
 
             // loads, positions, and scales desk
             gltfLoader.load(
@@ -331,6 +338,9 @@ export default {
                 }
             )
 
+            // #endregion models
+
+            // #tag renderer init
             // initializes and sets up renderer
             const renderer = new THREE.WebGLRenderer({antialias: true, gammaOutput: true, alpha: true});
             renderer.setPixelRatio(window.devicePixelRatio);
@@ -352,6 +362,7 @@ export default {
                 cameraPerspective.far = 5000
                 cameraPerspective.updateProjectionMatrix()
 
+                // #tag set camera rotation
                 // set camera rotation
                 cameraRig.up.set(0, 1, 0)
                 cameraRig.rotation.set(
@@ -364,6 +375,7 @@ export default {
                 cameraPerspectiveHelper.update()
                 cameraPerspectiveHelper.visible = false
 
+                // #region camera animation
                 // loops through each axis in three dimensions to update camera position and rotation
                 // based on target position and rotation
                 const planes = ['x', 'y', 'z']
@@ -377,6 +389,7 @@ export default {
 
                     // checks if the camera has met it's target position
                     if (pos[axis] !== tPos[axis]) {
+                        // #tag position
                         // checks if the next position update will reach or overshoot the target
                         // coming from positive to negative
                         if (pos[axis] > tPos[axis] && pos[axis] - this.camera.posSpeed <= tPos[axis]) {
@@ -398,6 +411,7 @@ export default {
 
                     // checks if the camera has met it's target rotation
                     if (rot[axis] !== tRot[axis]) {
+                        // #tag rotation
                         // checks if the next rotation update will reach or overshoot the target
                         // coming from positive to negative
                         if (rot[axis] > tRot[axis] && rot[axis] - this.camera.rotSpeed <= tRot[axis]) {
@@ -421,6 +435,8 @@ export default {
                     }
                 })
 
+                // #endregion camera animation
+
                 // resize listener to update both camera and renderer aspect ratio
                 window.addEventListener('resize', () => {
                     cameraPerspective.aspect = window.innerWidth / window.innerHeight
@@ -437,6 +453,7 @@ export default {
             // calls animate for next frame
             animate()
         },
+        // #endregion initBg
         // increases or decreases segment index based on vertical touch swipes
         handleSwipe () {
             if (this.touchYStart > this.touchYEnd) this.handleSegment(1)
@@ -447,6 +464,7 @@ export default {
     components: {
         SegmentPiece
     },
+    // #region mounted
     mounted () {
         // initializes the three.js background
         this.initBg()
@@ -480,6 +498,8 @@ export default {
             }
         }
     },
+    // #endregion mounted
+    // #region watch
     watch: {
         // watches and handles for changes on segmentIndex
         segmentIndex (curr, old) {
@@ -490,6 +510,7 @@ export default {
              * camera positions and rotations based on segment
              */
 
+            // #tag segment 1 (landing)
             // landing segment
             if (curr === 0) {
                 // camera positions and rotations for first segment in non mobile view
@@ -520,6 +541,7 @@ export default {
                 }
             }
 
+            // #tag segment 2 (calculator)
             // calculator segment
             if (curr == 1) {
                 // camera positions and rotations for second segment in non mobile view
@@ -550,6 +572,7 @@ export default {
                 }
             }
 
+            // #tag segment 3 (c64)
             // c64 segment
             if (curr == 2) {
                 // camera positions and rotations for third segment in non mobile view
@@ -580,6 +603,7 @@ export default {
                 }
             }
 
+            // #tag segment 4 (bookshelf)
             // bookshelf segment
             if (curr == 3) {
                 // camera positions and rotations for fourth segment in non mobile view
@@ -611,9 +635,11 @@ export default {
             }
         }
     }
+    // #endregion watch
 }
 </script>
 
+<!-- #region style -->
 <style scoped>
 .home-wrapper {
     position: fixed;
@@ -654,6 +680,7 @@ export default {
     padding-bottom: 45vh;
 }
 
+/** #tag segment stylings */
 /** segment stylings */
 
 .segment-text {
@@ -713,3 +740,4 @@ export default {
     }
 }
 </style>
+<!-- #endregion style -->
