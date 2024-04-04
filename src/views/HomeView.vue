@@ -63,6 +63,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export default {
     name: 'HomeView',
+    // #region data
     data () {
         return {
             // the current segment the user is on
@@ -75,6 +76,7 @@ export default {
             touchYEnd: 0,
             // whether or not mobile view is active
             mobile: false,
+            // #tag camera init
             // data for three.js camera
             camera: {
                 // speed at which camera moves/changes positions
@@ -110,6 +112,8 @@ export default {
             }
         }
     },
+    // #endregion
+    // #region methods
     methods: {
         // called by wheel event, detects page scroll
         scrollSegment (e) {
@@ -439,6 +443,7 @@ export default {
             if (this.touchYStart < this.touchYEnd) this.handleSegment(-1)
         }
     },
+    // #endregion methods
     components: {
         SegmentPiece
     },
