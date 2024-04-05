@@ -1,6 +1,8 @@
 <template>
-    <!-- bind index and bg as attrs so they can be accessed by views using this component -->
-    <div class="segment-piece" :index="index" :bg="bg"><slot></slot></div>
+    <div class="segment-piece" :index="index" :bg="bg">
+        <!-- bind index and bg as attrs so they can be accessed by views using this component -->
+        <slot></slot>
+    </div>
 </template>
 
 <script>
@@ -22,7 +24,7 @@ export default {
         }
     },
     mounted () {
-        // not setting bg anymore because of three.js background, may delete function all together later
+        // sets the background color. might remove because of three.js background
         // this.setBg()
 
         // scrolls this segment to the position it should be upon mounting

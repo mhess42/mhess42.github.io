@@ -12,8 +12,8 @@
                 some description will go here or something
             </div>
             <div>
-                <div>scroll to see more</div>
-                <div>vvvvvvvvv</div>
+                <div></div>
+                <div></div>
             </div>
         </segment-piece>
         <!-- segment component for calculator -->
@@ -62,6 +62,10 @@ import SegmentPiece from '@/components/SegmentPiece.vue'
 // imports for libraries used in this view
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPixelatedPass } from 'three/addons/postprocessing/RenderPixelatedPass.js';
+import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 export default {
     name: 'HomeView',
@@ -78,6 +82,8 @@ export default {
             touchYEnd: 0,
             // whether or not mobile view is active
             mobile: false,
+            // list of objects to outline
+            outline: [],
             // #tag camera init
             // data for three.js camera
             camera: {
@@ -212,14 +218,17 @@ export default {
             // #region models
 
             // loads, positions, and scales desk
+            let deskModel
             gltfLoader.load(
                 'assets/models/desk.glb',
                 obj => {
                     obj = obj.scene
+                    deskModel = obj
                     scene.add(obj)
                     obj.scale.set(75, 75, 75)
                     obj.rotateY(3.14159 / 2)
                     obj.position.set(-45, 0, 50)
+                    return deskModel
                 },
                 xhr => {
                     console.log(xhr.loaded);
@@ -230,10 +239,12 @@ export default {
             )
             
             // loads, positions, and scales, calculator
+            let calculatorModel
             gltfLoader.load(
                 'assets/models/calc.glb',
                 obj => {
                     obj = obj.scene
+                    calculatorModel = obj
                     scene.add(obj)
                     obj.scale.set(5, 5, 5)
                     obj.position.set(315, 310, 25)
@@ -247,10 +258,12 @@ export default {
             )
 
             // loads, positions, and scales c64
+            let c64Model
             gltfLoader.load(
                 'assets/models/c64.glb',
                 obj => {
                     obj = obj.scene
+                    c64Model = obj
                     scene.add(obj)
                     obj.scale.set(50, 50, 50)
                     obj.position.set(-100, 660, 610)
@@ -267,10 +280,12 @@ export default {
             )
 
             // loads, positions, and scales c64 monitor
+            let c64MonitorModel
             gltfLoader.load(
                 'assets/models/c64monitor.glb',
                 obj => {
                     obj = obj.scene
+                    c64MonitorModel = obj
                     scene.add(obj)
                     obj.scale.set(400, 400, 400)
                     obj.position.set(-250, 350, -160)
@@ -286,10 +301,12 @@ export default {
             )
 
             // loads, positions, and scales bookshelf
+            let bookshelfModel
             gltfLoader.load(
                 'assets/models/bookshelf.glb',
                 obj => {
                     obj = obj.scene
+                    bookshelfModel = obj
                     scene.add(obj)
                     obj.scale.set(400, 400, 400)
                     obj.position.set(700, 0, -200)
@@ -303,10 +320,12 @@ export default {
             )
 
             // loads, positions, and scales laptop
+            let laptopModel
             gltfLoader.load(
                 'assets/models/laptop.glb',
                 obj => {
                     obj = obj.scene
+                    laptopModel = obj
                     scene.add(obj)
                     obj.scale.set(100, 100, 100)
                     obj.position.set(20, 280, -90)
@@ -321,10 +340,12 @@ export default {
             )
 
             // loads, positions, and scales monitor
+            let monitorModel
             gltfLoader.load(
                 'assets/models/monitor.glb',
                 obj => {
                     obj = obj.scene
+                    monitorModel = obj
                     scene.add(obj)
                     obj.scale.set(.35, .35, .35)
                     obj.position.set(220, 322, -140)
@@ -346,6 +367,19 @@ export default {
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setClearColor( 0xfb97e6, 0);
+
+            // initializes and sets of composer for post processing effects
+            const composer = new EffectComposer(renderer)
+            const pixelPass = new RenderPixelatedPass(6, scene, cameraRig)
+            composer.addPass(pixelPass)
+            const outlinePass = new OutlinePass( new THREE.Vector2( window.innerWidth, window.innerHeight ), scene, cameraRig );
+            composer.addPass(outlinePass)
+            const outPass = new OutputPass()
+            composer.addPass(outPass)
+
+            // outline settings
+            outlinePass.edgeStrength = 50
+
             container.appendChild(renderer.domElement);
 
             // three.js animate function, just calls render basically
@@ -361,6 +395,17 @@ export default {
                 cameraPerspective.near = .01
                 cameraPerspective.far = 5000
                 cameraPerspective.updateProjectionMatrix()
+
+                // #tag model outlines
+                // outline models based on segment index
+                if (this.segmentIndex === 0) this.outline = []
+                if (this.segmentIndex === 1) this.outline = [calculatorModel]
+                if (this.segmentIndex === 2) this.outline = [c64Model, c64MonitorModel]
+                if (this.segmentIndex === 3) this.outline = [bookshelfModel]
+                if (this.segmentIndex === 4) this.outline = [laptopModel]
+                if (this.segmentIndex === 5) this.outline = [monitorModel]
+
+                outlinePass.selectedObjects = this.outline
 
                 // #tag set camera rotation
                 // set camera rotation
@@ -446,8 +491,10 @@ export default {
                 })
 
                 // sets viewport and renders scene
-                renderer.setViewport( 0, 0, window.innerWidth, window.innerHeight );
-                renderer.render(scene, cameraPerspective)
+                renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+                composer.setSize(window.innerWidth, window.innerHeight)
+                // renderer.render(scene, cameraPerspective)
+                composer.render()
             }
 
             // calls animate for next frame
@@ -694,20 +741,22 @@ export default {
     padding: 10vh;
     font-size: 1.4em;
     color: black;
+    border-radius: 1em;
+    border: 5px solid black
 }
 
 #calculator-text {
-    background-color: rgba(0, 0, 255, .6);
+    background-color: rgba(169, 169, 255, 0.8);
     right: 10vh;
 }
 
 #commodore-text {
-    background-color: rgba(255, 0, 0, .6);
+    background-color: rgba(255, 0, 0, .8);
     left: 10vh;
 }
 
 #book-text {
-    background-color: rgba(0, 255, 0, .6);
+    background-color: rgba(0, 255, 0, .8);
     right: 10vh;
     width: calc(30vw - 20vh)
 }
