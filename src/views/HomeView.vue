@@ -876,14 +876,14 @@ export default {
     }
 
     #calculator-text {
-        height: 60vh;
-        top: calc(40vh - 10vw - 10px);
+        height: 55vh;
+        top: calc(45vh - 10vw - 10px);
         border-top-left-radius: 1em;
         border-top-right-radius: 1em;
     }
 
     #commodore-text {
-        height: 50vh;
+        height: 45vh;
         top: 0px;
         left: 0px;
         border-bottom-left-radius: 1em;
@@ -899,7 +899,7 @@ export default {
     }
 
     #laptop-text {
-        height: 60vh;
+        height: 55vh;
         top: 0px;
         left: 0px;
         border-bottom-left-radius: 1em;
@@ -908,10 +908,10 @@ export default {
 
     #monitor-text {
         width: 95vw;
-        height: 20vh;
-        top: calc(40vh - 10vw);
+        height: 25vh;
+        top: calc(35vh - 10vw);
         padding: 0px;
-        font-size: .8em
+        font-size: .8em;
     }
 }
 </style>
