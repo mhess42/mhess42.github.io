@@ -9,7 +9,6 @@
                 madeline hess
             </div>
             <div id="title-text">
-                some description will go here or something
             </div>
             <div>
                 <div></div>
@@ -47,7 +46,7 @@
         </segment-piece>
         <!-- segment component for monitor -->
         <segment-piece bg="0, 255, 255" index="5" :segmentindex="segmentIndex">
-            <div class="segment-text" id="monitor text">
+            <div class="segment-text" id="monitor-text">
                 placehilder for monitor
             </div>
         </segment-piece>
@@ -310,6 +309,28 @@ export default {
                     scene.add(obj)
                     obj.scale.set(400, 400, 400)
                     obj.position.set(700, 0, -200)
+                    return bookshelfModel
+                },
+                xhr => {
+                    console.log(xhr.loaded);
+                },
+                err => {
+                    console.log(err);
+                }
+            )
+
+            // loads, positions, and scales bookshelf
+            let booksModel
+            gltfLoader.load(
+                'assets/models/books.glb',
+                obj => {
+                    obj = obj.scene
+                    booksModel = obj
+                    scene.add(obj)
+                    obj.scale.set(57, 57, 57)
+                    obj.rotation.y = (90 * (Math.PI /180))
+                    obj.position.set(860, 480, -200)
+                    return booksModel
                 },
                 xhr => {
                     console.log(xhr.loaded);
@@ -401,7 +422,7 @@ export default {
                 if (this.segmentIndex === 0) this.outline = []
                 if (this.segmentIndex === 1) this.outline = [calculatorModel]
                 if (this.segmentIndex === 2) this.outline = [c64Model, c64MonitorModel]
-                if (this.segmentIndex === 3) this.outline = [bookshelfModel]
+                if (this.segmentIndex === 3) this.outline = [booksModel]
                 if (this.segmentIndex === 4) this.outline = [laptopModel]
                 if (this.segmentIndex === 5) this.outline = [monitorModel]
 
@@ -670,16 +691,79 @@ export default {
                 else {
                     this.camera.tPos = {
                         x: 550,
-                        y: 900,
+                        y: 720,
                         z: 300
                     }
                     this.camera.tRot = {
-                        x: -10,
-                        y: -30,
-                        z: -5
+                        x: -40,
+                        y: -20,
+                        z: -25
                     }
                 }
             }
+
+            // #tag segment 5 (laptop)
+            // laptop segment
+            if (curr == 4) {
+                // camera positions and rotations for fifth segment in non mobile view
+                if (!this.mobile) {
+                    this.camera.tPos = {
+                        x: 0,
+                        y: 850,
+                        z: 120
+                    }
+                    this.camera.tRot = {
+                        x: -50,
+                        y: 0,
+                        z: 0
+                    }
+                } 
+                // camera positions and rotations for fifth segment in mobile view
+                else {
+                    this.camera.tPos = {
+                        x: -40,
+                        y: 1000,
+                        z: 300
+                    }
+                    this.camera.tRot = {
+                        x: -40,
+                        y: 0,
+                        z: 0
+                    }
+                }
+            }
+
+            // #tag segment 6 (monitor)
+            // monitor segment
+            if (curr == 5) {
+                // camera positions and rotations for sixth segment in non mobile view
+                if (!this.mobile) {
+                    this.camera.tPos = {
+                        x: 185,
+                        y: 410,
+                        z: 110
+                    }
+                    this.camera.tRot = {
+                        x: -3,
+                        y: -10,
+                        z: -.45
+                    }
+                } 
+                // camera positions and rotations for sixth segment in mobile view
+                else {
+                    this.camera.tPos = {
+                        x: 100,
+                        y: 400,
+                        z: 450
+                    }
+                    this.camera.tRot = {
+                        x: 0,
+                        y: -12.3,
+                        z: -.39
+                    }
+                }
+            }
+
         }
     }
     // #endregion watch
@@ -761,31 +845,73 @@ export default {
     width: calc(30vw - 20vh)
 }
 
+#laptop-text {
+    background-color: rgba(237, 173, 34, 0.8);
+    left: 10vh;
+    top: 10vh;
+    width: calc(100vw - 40vh);
+    height: 25vh
+}
+
+#monitor-text {
+    background-color: rgba(174, 0, 105, 0);
+    width: 50vw;
+    height: 45vh;
+    left: calc(25vw - 10vh);
+    top: 4vh;
+    color: white;
+    border: 0px;
+    font-family: dogica;
+}
+
 /** mobile view segment stylings */
 
 @media screen and (max-device-width: 1000px) {
     .segment-text {
-        width: 90vw;
+        width: calc(90vw - 10px) !important;
         left: 0px;
         padding: 5vw;
         font-size: 1.1em;
+        border-radius: 0px;
     }
 
     #calculator-text {
         height: 60vh;
-        top: calc(40vh - 10vw);
+        top: calc(40vh - 10vw - 10px);
+        border-top-left-radius: 1em;
+        border-top-right-radius: 1em;
     }
 
     #commodore-text {
         height: 50vh;
         top: 0px;
         left: 0px;
+        border-bottom-left-radius: 1em;
+        border-bottom-right-radius: 1em;
     }
 
     #book-text {
         height: 60vh;
-        top: 0px;
+        top: calc(40vh - 10vw - 10px);
         right: 0px;
+        border-top-left-radius: 1em;
+        border-top-right-radius: 1em;
+    }
+
+    #laptop-text {
+        height: 60vh;
+        top: 0px;
+        left: 0px;
+        border-bottom-left-radius: 1em;
+        border-bottom-right-radius: 1em;
+    }
+
+    #monitor-text {
+        width: 95vw;
+        height: 20vh;
+        top: calc(40vh - 10vw);
+        padding: 0px;
+        font-size: .8em
     }
 }
 </style>

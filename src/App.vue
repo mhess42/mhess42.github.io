@@ -13,12 +13,18 @@
   src: url('@/assets/fonts/UbuntuMono-Regular.ttf');
 }
 
+@font-face {
+  font-family: dogica;
+  src: url('@/assets/fonts/dogicapixel.ttf');
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  overscroll-behavior: none;
 }
 
 nav {
