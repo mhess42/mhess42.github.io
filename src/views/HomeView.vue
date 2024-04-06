@@ -3,6 +3,15 @@
     <div class="home-wrapper" @wheel.prevent="scrollSegment">
         <!-- background for three.js to render to -->
         <div id="bg"></div>
+        <!-- shown while models are loading -->
+        <transition name="fade">
+            <div id="loading-screen" v-if="!loaded">
+                <div id="loading-bar-wrapper">
+                    <span id="loading-text">loading</span>
+                    <div id="loading-bar" :style="`width: ${loadProgress}%`"></div>
+                </div>
+            </div>
+        </transition>
         <!-- segment component for landing -->
         <segment-piece id="title-segment" bg="0, 0, 255" index="0" :segmentindex="segmentIndex">
             <div id="title-header">
@@ -61,6 +70,7 @@ import SegmentPiece from '@/components/SegmentPiece.vue'
 // imports for libraries used in this view
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPixelatedPass } from 'three/addons/postprocessing/RenderPixelatedPass.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
@@ -83,6 +93,10 @@ export default {
             mobile: false,
             // list of objects to outline
             outline: [],
+            // whether all models are loaded
+            loaded: false,
+            // percentage of models loaded
+            loadProgress: 0,
             // #tag camera init
             // data for three.js camera
             camera: {
@@ -147,11 +161,30 @@ export default {
             console.log(oldColor, currColor);
             document.querySelector('.home-wrapper').style.backgroundColor = `rgba(${currColor}, .2)`
         },
+        // handles the loading progress of models
+        load (amount, total) {
+            this.loadProgress = amount / total * 100
+        },
         // #region initBg
         // initializes the three.js background
         initBg () {
+            // loading manager to track progress of loaded models
+            const loadingManager = new THREE.LoadingManager()
+            loadingManager.onProgress = (url, loaded, total) => {
+                this.load(loaded, total)
+            }
+            loadingManager.onLoad = () => {
+                this.loaded = true
+            }
+
             // glb/gltf model loader
-            const gltfLoader = new GLTFLoader()
+            const gltfLoader = new GLTFLoader(loadingManager)
+
+            // add draco support to loader
+            const dracoLoader = new DRACOLoader()
+            dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/')
+            dracoLoader.setDecoderConfig({type: 'js'})
+            gltfLoader.setDRACOLoader(dracoLoader)
 
             // dom element to render to 
             const container = document.querySelector('#bg')
@@ -182,7 +215,7 @@ export default {
             // #region geometry
 
             // load carpet texture and apply to floor plane geometry
-            const carpetText = new THREE.TextureLoader().load('assets/textures/carpet.jpg')
+            const carpetText = new THREE.TextureLoader().load('assets/textures/carpet-min.jpg')
             carpetText.wrapS = THREE.RepeatWrapping
             carpetText.wrapT = THREE.RepeatWrapping
             carpetText.repeat.set(45, 45)
@@ -197,7 +230,7 @@ export default {
             floor.lookAt(0, 1, 0)
 
             // load wood texture and apply to wall plane geometry
-            const woodText = new THREE.TextureLoader().load('assets/textures/wood4.jpg')
+            const woodText = new THREE.TextureLoader().load('assets/textures/wood4-min.jpg')
             woodText.wrapS = THREE.RepeatWrapping
             woodText.wrapT = THREE.RepeatWrapping
             woodText.repeat.set(45, 45)
@@ -214,12 +247,12 @@ export default {
             /**
              * models
              */
+            
             // #region models
-
             // loads, positions, and scales desk
             let deskModel
             gltfLoader.load(
-                'assets/models/desk.glb',
+                'assets/models/desk-compressed.glb',
                 obj => {
                     obj = obj.scene
                     deskModel = obj
@@ -230,7 +263,7 @@ export default {
                     return deskModel
                 },
                 xhr => {
-                    console.log(xhr.loaded);
+                    return xhr
                 },
                 err => {
                     console.log(err);
@@ -249,7 +282,7 @@ export default {
                     obj.position.set(315, 310, 25)
                 },
                 xhr => {
-                    console.log(xhr.loaded);
+                    return xhr
                 },
                 err => {
                     console.log(err);
@@ -259,7 +292,7 @@ export default {
             // loads, positions, and scales c64
             let c64Model
             gltfLoader.load(
-                'assets/models/c64.glb',
+                'assets/models/c64-compressed.glb',
                 obj => {
                     obj = obj.scene
                     c64Model = obj
@@ -271,7 +304,7 @@ export default {
                     obj.rotateX(-30 * (Math.PI / 180))
                 },
                 xhr => {
-                    console.log(xhr.loaded);
+                    return xhr
                 },
                 err => {
                     console.log(err);
@@ -281,7 +314,7 @@ export default {
             // loads, positions, and scales c64 monitor
             let c64MonitorModel
             gltfLoader.load(
-                'assets/models/c64monitor.glb',
+                'assets/models/c64monitor-compressed.glb',
                 obj => {
                     obj = obj.scene
                     c64MonitorModel = obj
@@ -292,7 +325,7 @@ export default {
                     obj.rotateY(10 * (Math.PI / 180))
                 },
                 xhr => {
-                    console.log(xhr.loaded);
+                    return xhr
                 },
                 err => {
                     console.log(err);
@@ -302,7 +335,7 @@ export default {
             // loads, positions, and scales bookshelf
             let bookshelfModel
             gltfLoader.load(
-                'assets/models/bookshelf.glb',
+                'assets/models/bookshelf-compressed.glb',
                 obj => {
                     obj = obj.scene
                     bookshelfModel = obj
@@ -312,7 +345,7 @@ export default {
                     return bookshelfModel
                 },
                 xhr => {
-                    console.log(xhr.loaded);
+                    return xhr
                 },
                 err => {
                     console.log(err);
@@ -333,7 +366,7 @@ export default {
                     return booksModel
                 },
                 xhr => {
-                    console.log(xhr.loaded);
+                    return xhr
                 },
                 err => {
                     console.log(err);
@@ -343,7 +376,7 @@ export default {
             // loads, positions, and scales laptop
             let laptopModel
             gltfLoader.load(
-                'assets/models/laptop.glb',
+                'assets/models/laptop-compressed.glb',
                 obj => {
                     obj = obj.scene
                     laptopModel = obj
@@ -353,7 +386,7 @@ export default {
                     obj.rotateY(180 * (Math.PI / 180))
                 },
                 xhr => {
-                    console.log(xhr.loaded);
+                    return xhr
                 },
                 err => {
                     console.log(err);
@@ -373,7 +406,7 @@ export default {
                     obj.rotateY(-100 * (Math.PI / 180))
                 },
                 xhr => {
-                    console.log(xhr.loaded);
+                    return xhr
                 },
                 err => {
                     console.log(err);
@@ -791,6 +824,57 @@ export default {
     position: fixed;
     top: 0px;
     left: 0px;
+}
+
+#loading-screen {
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    top: 0px;
+    left: 0px;
+    position: fixed;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#loading-bar-wrapper {
+    width: 60vw;
+    height: 5em;
+    background-color: black;
+    display: flex;
+    align-items: center;
+    transform-style: preserve-3d;
+    position: relative;
+}
+
+#loading-bar {
+    height: 5em;
+    background-color: white;
+    padding: 1em;
+    margin-left: -1em;
+    transform: translateZ(-10px)
+}
+
+#loading-text {
+    margin: auto;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 3em;
+}
+
+/** loading vue transition */
+
+.fade-leave-active {
+    transition: opacity .5s;
+}
+.fade-leave-to {
+    opacity: 0;
 }
 
 /** first segment / landing view */
