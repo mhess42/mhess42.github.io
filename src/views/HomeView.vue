@@ -17,7 +17,12 @@
             <div id="title-header">
                 madeline hess
             </div>
-            <div id="title-text">
+            <div id="title-text" v-if="!mobile">
+                scroll or use arrow keys <br />
+                to navigate timeline
+            </div>
+            <div id="title-text" v-else>
+                scroll to navigate timeline
             </div>
             <div>
                 <div></div>
@@ -581,6 +586,11 @@ export default {
             this.handleSwipe()
         })
 
+        document.addEventListener('keydown', e => {
+            if (e.key == 'ArrowUp' || e.key == 'ArrowLeft') this.handleSegment(-1)
+            if (e.key == 'ArrowDown' || e.key == 'ArrowRight') this.handleSegment(1)
+        })
+
         // sets mobile view var based on aspect ratio
         // desktops with mobile aspect ratio will be affected
         this.mobile = window.innerHeight > window.innerWidth
@@ -886,13 +896,19 @@ export default {
     flex-direction: column;
 }
 
+#title-header, #title-text {
+    color: white;
+    text-shadow: 1px 1px 1px black;
+}
+
 #title-header {
     font-size: 14vw;
 }
 
 #title-text {
-    padding-top: 5vh;
+    margin-top: -20vh;
     padding-bottom: 45vh;
+    font-size: 1.6em;
 }
 
 /** #tag segment stylings */
@@ -951,6 +967,10 @@ export default {
 /** mobile view segment stylings */
 
 @media screen and (max-device-width: 1000px) {
+    #title-text {
+        margin-top: 65vh
+    }
+
     .segment-text {
         width: calc(90vw - 10px) !important;
         left: 0px;
