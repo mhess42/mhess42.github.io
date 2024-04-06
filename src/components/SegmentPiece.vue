@@ -20,7 +20,9 @@ export default {
         },
         // changes this segment's top property to scroll up or down based on the current segment being viewed
         handleScroll () {
-            this.$el.style.top = `${(this.segmentindex - this.index) * -100}vh`
+            // temporarily disabled
+            return
+            // this.$el.style.top = `${(this.segmentindex - this.index) * -100}vh`
         }
     },
     mounted () {

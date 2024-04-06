@@ -12,58 +12,70 @@
                 </div>
             </div>
         </transition>
-        <!-- segment component for landing -->
-        <segment-piece id="title-segment" bg="0, 0, 255" index="0" :segmentindex="segmentIndex">
-            <div id="title-header">
-                madeline hess
-            </div>
-            <div id="title-text" v-if="!mobile">
-                scroll or use arrow keys <br />
-                to navigate timeline
-            </div>
-            <div id="title-text" v-else>
-                scroll to navigate timeline
-            </div>
-            <div>
-                <div></div>
-                <div></div>
-            </div>
-        </segment-piece>
-        <!-- segment component for calculator -->
-        <segment-piece bg="255, 0, 0" index="1" :segmentindex="segmentIndex">
-            <div class="segment-text" id="calculator-text">
-                i started my programming journey in middle school when i found a graphing calculator at a thrift store for $5.
-                at the time i was only interested in it because it let me play games in math class, but it served as a good introduction to code and how programs run.
-                for the next 7 years i spent most of my time in math and chemistry making games on my calculator.
-            </div>
-        </segment-piece>
-        <!-- segment component for c64 -->
-        <segment-piece bg="0, 255, 0" index="2" :segmentindex="segmentIndex">
-            <div class="segment-text" id="commodore-text">
-                noticing my interest in the basic programming language, and being a programmer himself, my dad introduced me to his old commodore 64.
-                i mainly just ran old floppy disks he had laying around, but i also followed a good handful of c64 basic tutorials from old magazines.
-                it was around this same time my father showed me some of his programming books. i read books about data structures and other boring stuff during off campus sports events.
-                at the beginning of high school i even carried a regular expressions reference book in my backpack.
-            </div>
-        </segment-piece>
-        <!-- segment component for bookshelf -->
-        <segment-piece bg="255, 255, 0" index="3" :segmentindex="segmentIndex">
-            <div class="segment-text" id="book-text">
-                palceholder for books
-            </div>
-        </segment-piece>
-        <!-- segment component for laptop -->
-        <segment-piece bg="255, 0, 255" index="4" :segmentindex="segmentIndex">
-            <div class="segment-text" id="laptop-text">
-                placeholder for laptop
-            </div>
-        </segment-piece>
-        <!-- segment component for monitor -->
-        <segment-piece bg="0, 255, 255" index="5" :segmentindex="segmentIndex">
-            <div class="segment-text" id="monitor-text">
-                placehilder for monitor
-            </div>
-        </segment-piece>
+        <transition name="appear">
+            <!-- segment component for landing -->
+            <segment-piece v-if="segmentIndex === 0" id="title-segment" bg="0, 0, 255" index="0" :segmentindex="segmentIndex">
+                <div id="title-header">
+                    madeline hess
+                </div>
+                <div id="title-text" v-if="!mobile">
+                    scroll or use arrow keys <br />
+                    to navigate timeline
+                </div>
+                <div id="title-text" v-else>
+                    scroll to navigate timeline
+                </div>
+                <div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </segment-piece>
+        </transition>
+        <transition name="appear">
+            <!-- segment component for calculator -->
+            <segment-piece v-if="segmentIndex === 1" bg="255, 0, 0" index="1" :segmentindex="segmentIndex">
+                <div class="segment-text" id="calculator-text">
+                    i started my programming journey in middle school when i found a graphing calculator at a thrift store for $5.
+                    at the time i was only interested in it because it let me play games in math class, but it served as a good introduction to code and how programs run.
+                    for the next 7 years i spent most of my time in math and chemistry making games on my calculator.
+                </div>
+            </segment-piece>
+        </transition>
+        <transition name="appear">
+            <!-- segment component for c64 -->
+            <segment-piece v-if="segmentIndex === 2" bg="0, 255, 0" index="2" :segmentindex="segmentIndex">
+                <div class="segment-text" id="commodore-text">
+                    noticing my interest in the basic programming language, and being a programmer himself, my dad introduced me to his old commodore 64.
+                    i mainly just ran old floppy disks he had laying around, but i also followed a good handful of c64 basic tutorials from old magazines.
+                    it was around this same time my father showed me some of his programming books. i read books about data structures and other boring stuff during off campus sports events.
+                    at the beginning of high school i even carried a regular expressions reference book in my backpack.
+                </div>
+            </segment-piece>
+        </transition>
+        <transition name="appear">
+            <!-- segment component for bookshelf -->
+            <segment-piece v-if="segmentIndex === 3" bg="255, 255, 0" index="3" :segmentindex="segmentIndex">
+                <div class="segment-text" id="book-text">
+                    palceholder for books
+                </div>
+            </segment-piece>
+        </transition>
+        <transition name="appear">
+            <!-- segment component for laptop -->
+            <segment-piece v-if="segmentIndex === 4" bg="255, 0, 255" index="4" :segmentindex="segmentIndex">
+                <div class="segment-text" id="laptop-text">
+                    placeholder for laptop
+                </div>
+            </segment-piece>
+        </transition>
+        <transition name="appear">
+            <!-- segment component for monitor -->
+            <segment-piece v-if="segmentIndex === 5" bg="0, 255, 255" index="5" :segmentindex="segmentIndex">
+                <div class="segment-text" id="monitor-text">
+                    placehilder for monitor
+                </div>
+            </segment-piece>
+        </transition>
     </div>
     <!-- #endregion segments -->
 </template>
@@ -155,7 +167,8 @@ export default {
         handleSegment (dir) {
             this.segmentIndex += dir
 
-            const numSegments = document.querySelectorAll('.segment-piece').length - 1
+            // const numSegments = document.querySelectorAll('.segment-piece').length - 1
+            const numSegments = 5
             if (this.segmentIndex < 0) this.segmentIndex = 0
             if (this.segmentIndex > numSegments) this.segmentIndex = numSegments
         },
@@ -586,6 +599,7 @@ export default {
             this.handleSwipe()
         })
 
+        // keydown listener for arrow key navigation
         document.addEventListener('keydown', e => {
             if (e.key == 'ArrowUp' || e.key == 'ArrowLeft') this.handleSegment(-1)
             if (e.key == 'ArrowDown' || e.key == 'ArrowRight') this.handleSegment(1)
@@ -613,10 +627,11 @@ export default {
     // #region watch
     watch: {
         // watches and handles for changes on segmentIndex
-        segmentIndex (curr, old) {
+        segmentIndex (curr) {
             // updates the background color based on new segment
-            this.changeBg(curr, old)
-
+            // disabled for now
+            // this.changeBg(curr, old)
+            
             /**
              * camera positions and rotations based on segment
              */
@@ -673,7 +688,7 @@ export default {
                     this.camera.tPos = {
                         x: 315,
                         y: 480,
-                        z: 80
+                        z: 70
                     }
                     this.camera.tRot = {
                         x: -90,
@@ -887,6 +902,40 @@ export default {
     opacity: 0;
 }
 
+/** #region segment transitions */
+/** segment appear vue transition */
+
+.appear-enter-active, .appear-leave-active {
+    transition: all 1s;
+}
+
+.appear-enter-from, .appear-leave-to {
+    opacity: 0;
+}
+
+.appear-enter-from#title-segment, .appear-leave-to#title-segment {
+    top: -50vh;
+}
+
+.appear-enter-active .segment-text, .appear-leave-active .segment-text {
+    transition: all 1s;
+}
+
+.appear-enter-from #calculator-text, .appear-leave-to #calculator-text, 
+.appear-enter-from #book-text, .appear-leave-to #book-text{
+    right: -50vw;
+}
+
+.appear-enter-from #commodore-text, .appear-leave-to #commodore-text {
+    left: -50vw;
+}
+
+.appear-enter-from #laptop-text, .appear-leave-to #laptop-text {
+    top: -50vh;
+}
+
+/** #endregion segment transitions */
+
 /** first segment / landing view */
 
 #title-segment {
@@ -964,6 +1013,7 @@ export default {
     font-family: dogica;
 }
 
+/** #tag mobile stylings */
 /** mobile view segment stylings */
 
 @media screen and (max-device-width: 1000px) {
@@ -1016,6 +1066,24 @@ export default {
         top: calc(35vh - 10vw);
         padding: 0px;
         font-size: .8em;
+    }
+
+    /** #tag mobile transitions */
+    /** vue transitions for mobile */
+
+    .appear-enter-from#title-segment, .appear-leave-to#title-segment {
+        top: 0px;
+    }
+
+    .appear-enter-from #calculator-text, .appear-leave-to #calculator-text, 
+    .appear-enter-from #book-text, .appear-leave-to #book-text{
+        top: calc(40vh - 10vw - 10px + 50vh);
+    }
+
+    .appear-enter-from #commodore-text, .appear-leave-to #commodore-text,
+    .appear-enter-from #laptop-text, .appear-leave-to #laptop-text {
+        left: 0px;
+        top: -50vh;
     }
 }
 </style>
