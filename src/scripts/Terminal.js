@@ -49,7 +49,8 @@ class Terminal {
 
         switch (cmd) {
             case 'help':
-                this.addLine('you have used the help command')
+                this.addLine(`run 'credits' to view the cc attributions`)
+                this.addLine(`run 'vapor' to change in and out of vaporwave mode`)
                 break
             case 'clear':
                 this.history = []
@@ -58,7 +59,7 @@ class Terminal {
                 this.addLine(args.join(' '))
                 break
             case 'vapor':
-                if (args[0].toLowerCase() !== 'true' && args[0].toLowerCase() !== 'false') {
+                if (!args[0] || (args[0].toLowerCase() !== 'true' && args[0].toLowerCase() !== 'false')) {
                     this.addLine(`vapor only accepts arguments 'true' or 'false'`)
                     return
                 }
@@ -72,6 +73,28 @@ class Terminal {
                 break
             case 'credits':
                 this.callback({credits: true})
+                break
+            case 'sv_cheats':
+                if (!args[0] || !'01'.includes(args[0])) {
+                    this.addLine('boolean only accepts 1 or 0')
+                    return
+                }
+                if (args[0] == '1') {
+                    this.addLine('enabling cheats')
+                    this.addLine('double click or press escape to focus the monitor')
+                    this.callback({sv_cheats: 1})
+                } else {
+                    this.addLine('disabling cheats')
+                    this.callback({sv_cheats: 0})
+                }
+                break
+            case 'debug':
+                if (!args[0]) return
+                this.addLine(this.callback({debug: args}))
+                break
+            case 'debugset':
+                if (args.length < 2) return
+                this.addLine(this.callback({debugset: args}))
                 break
             default:
                 this.addLine(`command '${cmd}' not recognized`)

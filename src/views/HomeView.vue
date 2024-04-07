@@ -107,6 +107,7 @@ import { RenderPixelatedPass } from 'three/addons/postprocessing/RenderPixelated
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ClearPass } from 'three/addons/postprocessing/ClearPass.js';
+import Stats from 'three/addons/libs/stats.module.js';
 
 export default {
     name: 'HomeView',
@@ -140,6 +141,8 @@ export default {
             showCredits: false,
             // the credits for the models
             credits: process.env.VUE_APP_CREDITS,
+            // 1 if cheats are enabled, else 0
+            sv_cheats: 0,
             // #tag camera init
             // data for three.js camera
             camera: {
@@ -172,6 +175,17 @@ export default {
                     x: -20,
                     y: 0,
                     z: 0
+                },
+                // values to use when cheats are enabled
+                sv_cheats: {
+                    // degrees to rotate on world axis
+                    rotation: {x: 0, y: 0, z: 0},
+                    // rotation speed in degrees
+                    rotationSpeed: 2,
+                    // position when not focused on monitor
+                    position: {x: 0, y: 0, z: 0},
+                    // speed
+                    positionSpeed: 6
                 }
             }
         }
@@ -256,9 +270,12 @@ export default {
             const cameraRig = cameraPerspective
 
             scene.add(cameraRig)
+            this.cameraRig = cameraRig
             
             const ambientLight = new THREE.AmbientLight(0xFFFFFF)
             scene.add(ambientLight)
+
+            const stats = new Stats()
 
             /**
              * geometry
@@ -498,20 +515,22 @@ export default {
             const outlinePass = new OutlinePass( new THREE.Vector2( window.innerWidth, window.innerHeight ), scene, cameraRig );
             const outPass = new OutputPass()
             
+            // outline settings
+            outlinePass.edgeStrength = 50
 
             composer.addPass(clearPass)
             composer.addPass(pixelPass)
             composer.addPass(outlinePass)
             composer.addPass(outPass)
 
-            // outline settings
-            outlinePass.edgeStrength = 50
 
-            container.appendChild(renderer.domElement);
+            container.appendChild(renderer.domElement)
+            container.appendChild(stats.dom)
 
             // three.js animate function, just calls render basically
             function animate () {
                 requestAnimationFrame(animate)
+                stats.update()
                 render()
             }
 
@@ -537,11 +556,18 @@ export default {
                     backWall.visible = false
                 } else {
                     carpetMat.setValues({
-                        color: null,
+                        color: 0xffffff,
                         wireframe: false,
                         map: carpetText
                     })
                     backWall.visible = true
+                }
+
+                // changes stuff if cheats are enabled
+                if (this.sv_cheats == 1) {
+                    stats.dom.style.opacity = '0.9'
+                } else {
+                    stats.dom.style.opacity = '0'
                 }
 
                 carpetMat.needsUpdate = true
@@ -555,6 +581,7 @@ export default {
                 if (this.segmentIndex === 3) this.outline = [booksModel]
                 if (this.segmentIndex === 4) this.outline = [laptopModel]
                 if (this.segmentIndex === 5) this.outline = [monitorModel]
+                if (this.segmentIndex === 42) this.outline = []
 
                 outlinePass.selectedObjects = this.outline
 
@@ -570,6 +597,36 @@ export default {
                 // updates perspective helper, useful for debugging
                 cameraPerspectiveHelper.update()
                 cameraPerspectiveHelper.visible = false
+
+                // position and rotation if cheats are enabled
+                if (this.sv_cheats == 1) {
+                    if (this.segmentIndex == 5) {
+                        // cameraPerspective.position.set(185, 410, 110)
+                        cameraPerspective.rotation.set(
+                            -3 * (Math.PI / 180),
+                            -10 * (Math.PI / 180), 
+                            -0.45 * (Math.PI / 180)
+                        )
+                    } else {
+                        cameraPerspective.position.set(
+                            this.camera.sv_cheats.position.x,
+                            this.camera.sv_cheats.position.y,
+                            this.camera.sv_cheats.position.z,
+                        )
+    
+                        const axisX = new THREE.Vector3(1, 0, 0)
+                        const axisY = new THREE.Vector3(0, 1, 0)
+                        const axisZ = new THREE.Vector3(0, 0, 1)
+    
+                        cameraRig.rotateOnWorldAxis(axisX, this.camera.sv_cheats.rotation.x * (Math.PI / 180))
+                        cameraRig.rotateOnWorldAxis(axisY, this.camera.sv_cheats.rotation.y * (Math.PI / 180))
+                        cameraRig.rotateOnWorldAxis(axisZ, this.camera.sv_cheats.rotation.z * (Math.PI / 180))
+                    }
+
+                    renderer.clear()
+                    composer.render()
+                    return
+                }
 
                 // #region camera animation
                 // loops through each axis in three dimensions to update camera position and rotation
@@ -659,10 +716,26 @@ export default {
             if (this.touchYStart < this.touchYEnd) this.handleSegment(-1)
         },
         // #tag terminal callback
+        // method that terminal calls for handling things outside it's scope
         termCallback (data) {
             if (data.vaporwave !== undefined) this.vaporwave = data.vaporwave
 
-            if (data.credits) this.showCredits = true
+            if (data.credits) {
+                this.showCredits = true
+                setTimeout(() => {
+                    this.showCredits = false
+                }, 5000)
+            } 
+
+            if (data.sv_cheats !== undefined) {
+                this.sv_cheats = data.sv_cheats
+                this.camera.sv_cheats.position = {...this.camera.pos}
+            }
+
+            if (data.debug) return eval(`this.${data.debug.join('.')}`);
+            if (data.debugset) return eval(
+                `this.${data.debugset.slice(0, data.debugset.length - 1).join('.')} = ${data.debugset[data.debugset.length - 1]}`
+            )
         }
     },
     // #endregion methods
@@ -689,13 +762,36 @@ export default {
         // touchend listener to update vars for tracking touchscreen swipes
         document.addEventListener('touchend', e => {
             this.touchYEnd = e.changedTouches[0].screenY
-            this.handleSwipe()
+            if (this.sv_cheats == 0) this.handleSwipe()
         })
 
         // keydown listener for arrow key navigation
         document.addEventListener('keydown', e => {
-            if (e.key == 'ArrowUp' || e.key == 'ArrowLeft') this.handleSegment(-1)
-            if (e.key == 'ArrowDown' || e.key == 'ArrowRight') this.handleSegment(1)
+            if (this.sv_cheats == 0) {
+                if (e.key == 'ArrowUp' || e.key == 'ArrowLeft') this.handleSegment(-1)
+                if (e.key == 'ArrowDown' || e.key == 'ArrowRight') this.handleSegment(1)
+    
+                if (e.key == '5') this.segmentIndex = 5
+            } else {
+                if (e.key == 'Escape' && this.segmentIndex != 42) this.segmentIndex = 42
+                else if (e.key == 'Escape' && this.segmentIndex == 42) this.segmentIndex = 5
+
+                if (this.segmentIndex !== 42) return
+
+                if (e.key == 'ArrowUp') this.camera.sv_cheats.rotation.x += this.camera.sv_cheats.rotationSpeed
+                if (e.key == 'ArrowDown') this.camera.sv_cheats.rotation.x -= this.camera.sv_cheats.rotationSpeed
+                if (e.key == 'ArrowLeft') this.camera.sv_cheats.rotation.y += this.camera.sv_cheats.rotationSpeed
+                if (e.key == 'ArrowRight') this.camera.sv_cheats.rotation.y -= this.camera.sv_cheats.rotationSpeed
+                if (e.key == 'q') this.camera.sv_cheats.rotation.z += this.camera.sv_cheats.rotationSpeed
+                if (e.key == 'e') this.camera.sv_cheats.rotation.z -= this.camera.sv_cheats.rotationSpeed
+
+                if (e.key == 'w') this.camera.sv_cheats.position.z -= this.camera.sv_cheats.positionSpeed
+                if (e.key == 's') this.camera.sv_cheats.position.z += this.camera.sv_cheats.positionSpeed
+                if (e.key == 'a') this.camera.sv_cheats.position.x -= this.camera.sv_cheats.positionSpeed
+                if (e.key == 'd') this.camera.sv_cheats.position.x += this.camera.sv_cheats.positionSpeed
+                if (e.key == 'z') this.camera.sv_cheats.position.y -= this.camera.sv_cheats.positionSpeed
+                if (e.key == 'x') this.camera.sv_cheats.position.y += this.camera.sv_cheats.positionSpeed
+            }
         })
 
         // sets mobile view var based on aspect ratio
@@ -1118,10 +1214,13 @@ export default {
 }
 
 #credits-text {
-    background-color: rgba(0, 0, 0, .8);
-    color: white;
-    right: calc(25vh - 20vh);
-    width: 50vh;
+    background-color: rgba(82, 241, 14, 0.8);
+    color: black;
+    left: calc(10vw - 10vh);
+    width: 80vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /** #tag mobile stylings */
