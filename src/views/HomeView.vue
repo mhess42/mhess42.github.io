@@ -3,6 +3,8 @@
     <div class="home-wrapper" @wheel.prevent="scrollSegment">
         <!-- background for three.js to render to -->
         <div id="bg"></div>
+        <!-- canvas for monitor screen texture -->
+        <canvas id="monitor-canvas" width="1280" height="720"></canvas>
         <!-- shown while models are loading -->
         <transition name="fade">
             <div id="loading-screen" v-if="!loaded">
@@ -72,7 +74,7 @@
             <!-- segment component for monitor -->
             <segment-piece v-if="segmentIndex === 5" bg="0, 255, 255" index="5" :segmentindex="segmentIndex">
                 <div class="segment-text" id="monitor-text">
-                    placehilder for monitor
+                    
                 </div>
             </segment-piece>
         </transition>
@@ -81,6 +83,9 @@
 </template>
 
 <script>
+// import other scripts to run
+import Terminal from '@/scripts/Terminal.js'
+
 // imports for sfcs used in this view
 import SegmentPiece from '@/components/SegmentPiece.vue'
 
@@ -92,9 +97,13 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPixelatedPass } from 'three/addons/postprocessing/RenderPixelatedPass.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ClearPass } from 'three/addons/postprocessing/ClearPass.js';
 
 export default {
     name: 'HomeView',
+    components: {
+        SegmentPiece
+    },
     // #region data
     data () {
         return {
@@ -114,6 +123,10 @@ export default {
             loaded: false,
             // percentage of models loaded
             loadProgress: 0,
+            // the terminal object that will be displayed on the monitor
+            terminal: null,
+            // whether or not to display in vaporwave mode
+            vaporwave: false,
             // #tag camera init
             // data for three.js camera
             camera: {
@@ -173,10 +186,17 @@ export default {
             if (this.segmentIndex > numSegments) this.segmentIndex = numSegments
         },
         // changes the background color based on the current segment
-        changeBg (curr, old) {
-            const oldColor = document.querySelector(`[index="${old}"]`).getAttribute('bg')
-            const currColor = document.querySelector(`[index="${curr}"]`).getAttribute('bg');
-            console.log(oldColor, currColor);
+        changeBg (curr) {
+            let currColor = '0, 0, 0'
+            
+            if (curr === 0) currColor = '255, 0, 0'
+            if (curr === 1) currColor = '0, 255, 0'
+            if (curr === 2) currColor = '0, 0, 255'
+            if (curr === 3) currColor = '255, 255, 0'
+            if (curr === 4) currColor = '0, 255, 255'
+            if (curr === 5) currColor = '255, 0, 255'
+
+            
             document.querySelector('.home-wrapper').style.backgroundColor = `rgba(${currColor}, .2)`
         },
         // handles the loading progress of models
@@ -212,6 +232,14 @@ export default {
              */
 
             const scene = new THREE.Scene()
+            // scene.background = new THREE.CubeTextureLoader().setPath('assets/textures/').load([
+            //     'vaporsun.png',
+            //     'vaporsun.png',
+            //     'vaporsun.png',
+            //     'vaporsun.png',
+            //     'vaporsun.png',
+            //     'vaporsun.png',
+            // ])
 
             const cameraPerspective = new THREE.PerspectiveCamera(50, (window.innerWidth / window.innerHeight), 150, 1000)
             const cameraPerspectiveHelper = new THREE.CameraHelper(cameraPerspective)
@@ -234,12 +262,13 @@ export default {
 
             // load carpet texture and apply to floor plane geometry
             const carpetText = new THREE.TextureLoader().load('assets/textures/carpet-min.jpg')
+            const carpetMat = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, map: carpetText})
             carpetText.wrapS = THREE.RepeatWrapping
             carpetText.wrapT = THREE.RepeatWrapping
             carpetText.repeat.set(45, 45)
             const floor = new THREE.Mesh(
                 new THREE.PlaneGeometry(10000, 10000, 100, 100),
-                new THREE.MeshBasicMaterial({side: THREE.DoubleSide, wireframe: false, map: carpetText})
+                carpetMat
             )
             floor.position.x = 0
             floor.position.y = 0
@@ -249,16 +278,33 @@ export default {
 
             // load wood texture and apply to wall plane geometry
             const woodText = new THREE.TextureLoader().load('assets/textures/wood4-min.jpg')
+            const wallMat = new THREE.MeshBasicMaterial({map: woodText, side: THREE.DoubleSide})
             woodText.wrapS = THREE.RepeatWrapping
             woodText.wrapT = THREE.RepeatWrapping
             woodText.repeat.set(45, 45)
             const backWall = new THREE.Mesh(
                 new THREE.PlaneGeometry(10000, 10000, 100, 100),
-                new THREE.MeshBasicMaterial({map: woodText, side: THREE.DoubleSide, wireframe: false})
+                wallMat
             )
             backWall.position.z = -400
             scene.add(backWall)
             backWall.lookAt(0, 0, 1)
+
+            // load canvas texture and apply to monitor plane geometry
+            const monitorCanvas = document.getElementById('monitor-canvas')
+            const monitorText = new THREE.CanvasTexture(monitorCanvas)
+            console.log(monitorText);
+            const monitorPlane = new THREE.Mesh(
+                new THREE.PlaneGeometry(284, 145, 5, 5),
+                new THREE.MeshBasicMaterial({map: monitorText, side: THREE.DoubleSide, wireframe: false})
+            )
+            monitorPlane.position.set(
+                222.5,
+                421,
+                -102.7
+            )
+            monitorPlane.rotation.y = -10 * (Math.PI / 180)
+            scene.add(monitorPlane)
 
             // #endregion geometry
 
@@ -435,18 +481,22 @@ export default {
 
             // #tag renderer init
             // initializes and sets up renderer
-            const renderer = new THREE.WebGLRenderer({antialias: true, gammaOutput: true, alpha: true});
+            const renderer = new THREE.WebGLRenderer({alpha: true});
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setClearColor( 0xfb97e6, 0);
+            renderer.autoClear = true
 
             // initializes and sets of composer for post processing effects
-            const composer = new EffectComposer(renderer)
-            const pixelPass = new RenderPixelatedPass(6, scene, cameraRig)
-            composer.addPass(pixelPass)
+            const composer = new EffectComposer(renderer,  new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, {stencilBuffer: true}))
+            const clearPass = new ClearPass()
+            const pixelPass = new RenderPixelatedPass(3, scene, cameraRig)
             const outlinePass = new OutlinePass( new THREE.Vector2( window.innerWidth, window.innerHeight ), scene, cameraRig );
-            composer.addPass(outlinePass)
             const outPass = new OutputPass()
+            
+
+            composer.addPass(clearPass)
+            composer.addPass(pixelPass)
+            composer.addPass(outlinePass)
             composer.addPass(outPass)
 
             // outline settings
@@ -460,6 +510,7 @@ export default {
                 render()
             }
 
+            // #tag render
             // three.js render function, handles each frame
             const render = () => {
                 // set camera properties
@@ -467,6 +518,29 @@ export default {
                 cameraPerspective.near = .01
                 cameraPerspective.far = 5000
                 cameraPerspective.updateProjectionMatrix()
+
+                // updates the monitor terminal texture
+                monitorText.needsUpdate = true
+
+                // change appearances if in vaporwave mode
+                if (this.vaporwave) {
+                    carpetMat.setValues({
+                        color: 0x0000ff,
+                        wireframe: true,
+                        map: null
+                    })
+                    backWall.visible = false
+                } else {
+                    carpetMat.setValues({
+                        color: null,
+                        wireframe: false,
+                        map: carpetText
+                    })
+                    backWall.visible = true
+                }
+
+                carpetMat.needsUpdate = true
+                wallMat.needsUpdate = true
 
                 // #tag model outlines
                 // outline models based on segment index
@@ -566,6 +640,7 @@ export default {
                 renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
                 composer.setSize(window.innerWidth, window.innerHeight)
                 // renderer.render(scene, cameraPerspective)
+                renderer.clear()
                 composer.render()
             }
 
@@ -577,16 +652,29 @@ export default {
         handleSwipe () {
             if (this.touchYStart > this.touchYEnd) this.handleSegment(1)
             if (this.touchYStart < this.touchYEnd) this.handleSegment(-1)
+        },
+        // #tag terminal callback
+        termCallback (data) {
+            if (data.vaporwave !== undefined) this.vaporwave = data.vaporwave
+
+            console.log(data);
         }
     },
     // #endregion methods
-    components: {
-        SegmentPiece
-    },
     // #region mounted
     mounted () {
         // initializes the three.js background
         this.initBg()
+
+        // initialize the terminal that is displayed on the monitor
+        this.terminal = new Terminal(
+            document.getElementById('monitor-canvas').getContext('2d'),
+            1280, 
+            720,
+            this.termCallback
+        )
+        this.terminal.init()
+        this.terminal.paused = true
         
         // touchstart listener to update vars for tracking touchscreen swipes
         document.addEventListener('touchstart', e => {
@@ -630,8 +718,11 @@ export default {
         segmentIndex (curr) {
             // updates the background color based on new segment
             // disabled for now
-            // this.changeBg(curr, old)
+            this.changeBg(curr)
             
+            // pauses terminal if not focused on it
+            this.terminal.paused = curr !== 5
+
             /**
              * camera positions and rotations based on segment
              */
@@ -851,6 +942,11 @@ export default {
     left: 0px;
 }
 
+#monitor-canvas {
+    opacity: 0;
+    position: fixed;
+}
+
 #loading-screen {
     width: 100vw;
     height: 100vh;
@@ -1004,13 +1100,16 @@ export default {
 
 #monitor-text {
     background-color: rgba(174, 0, 105, 0);
-    width: 50vw;
-    height: 45vh;
-    left: calc(25vw - 10vh);
-    top: 4vh;
+    width: 70vw;
+    height: 71.5vh;
+    padding: 0px;
+    left: calc(20.2vw - 10vh);
+    top: 2.3vh;
     color: white;
-    border: 0px;
+    border: 2px solid blue;
     font-family: dogica;
+    border-radius: 0px;
+    opacity: 0;
 }
 
 /** #tag mobile stylings */
