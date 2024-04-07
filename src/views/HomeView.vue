@@ -78,6 +78,15 @@
                 </div>
             </segment-piece>
         </transition>
+        <transition name="appear">
+            <segment-piece v-if="showCredits" bg="0, 255, 255" index="69" :segmentindex="segmentIndex">
+                <div class="segment-text" id="credits-text">
+                    <div v-for="line in credits.split(`\n`)" :key="line">
+                        {{ line }}
+                    </div>
+                </div>
+            </segment-piece>
+        </transition>
     </div>
     <!-- #endregion segments -->
 </template>
@@ -127,6 +136,10 @@ export default {
             terminal: null,
             // whether or not to display in vaporwave mode
             vaporwave: false,
+            // whether or not to display cc credits
+            showCredits: false,
+            // the credits for the models
+            credits: process.env.VUE_APP_CREDITS,
             // #tag camera init
             // data for three.js camera
             camera: {
@@ -232,14 +245,6 @@ export default {
              */
 
             const scene = new THREE.Scene()
-            // scene.background = new THREE.CubeTextureLoader().setPath('assets/textures/').load([
-            //     'vaporsun.png',
-            //     'vaporsun.png',
-            //     'vaporsun.png',
-            //     'vaporsun.png',
-            //     'vaporsun.png',
-            //     'vaporsun.png',
-            // ])
 
             const cameraPerspective = new THREE.PerspectiveCamera(50, (window.innerWidth / window.innerHeight), 150, 1000)
             const cameraPerspectiveHelper = new THREE.CameraHelper(cameraPerspective)
@@ -657,7 +662,7 @@ export default {
         termCallback (data) {
             if (data.vaporwave !== undefined) this.vaporwave = data.vaporwave
 
-            console.log(data);
+            if (data.credits) this.showCredits = true
         }
     },
     // #endregion methods
@@ -1110,6 +1115,13 @@ export default {
     font-family: dogica;
     border-radius: 0px;
     opacity: 0;
+}
+
+#credits-text {
+    background-color: rgba(0, 0, 0, .8);
+    color: white;
+    right: calc(25vh - 20vh);
+    width: 50vh;
 }
 
 /** #tag mobile stylings */

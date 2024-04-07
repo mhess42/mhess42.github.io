@@ -70,6 +70,9 @@ class Terminal {
                     this.callback({vaporwave: false})
                 }
                 break
+            case 'credits':
+                this.callback({credits: true})
+                break
             default:
                 this.addLine(`command '${cmd}' not recognized`)
         }
