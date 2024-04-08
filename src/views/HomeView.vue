@@ -5,6 +5,8 @@
         <div id="bg"></div>
         <!-- canvas for monitor screen texture -->
         <canvas id="monitor-canvas" width="1280" height="720"></canvas>
+        <!-- used to invoke on screen keyboard on mobile -->
+        <input id="input" style="opacity: 0" />
         <!-- shown while models are loading -->
         <transition name="fade">
             <div id="loading-screen" v-if="!loaded">
@@ -49,8 +51,6 @@
                 <div class="segment-text" id="commodore-text">
                     noticing my interest in the basic programming language, and being a programmer himself, my dad introduced me to his old commodore 64.
                     i mainly just ran old floppy disks he had laying around, but i also followed a good handful of c64 basic tutorials from old magazines.
-                    it was around this same time my father showed me some of his programming books. i read books about data structures and other boring stuff during off campus sports events.
-                    at the beginning of high school i even carried a regular expressions reference book in my backpack.
                 </div>
             </segment-piece>
         </transition>
@@ -58,7 +58,9 @@
             <!-- segment component for bookshelf -->
             <segment-piece v-if="segmentIndex === 3" bg="255, 255, 0" index="3" :segmentindex="segmentIndex">
                 <div class="segment-text" id="book-text">
-                    palceholder for books
+                    around the same time, my dad introduced me to his collection of programming books.
+                    i read about data structers and other dumb nerd stuff while at away sports games.
+                    for a bit i even carried a regex refference book in my backpack at all times.
                 </div>
             </segment-piece>
         </transition>
@@ -66,7 +68,11 @@
             <!-- segment component for laptop -->
             <segment-piece v-if="segmentIndex === 4" bg="255, 0, 255" index="4" :segmentindex="segmentIndex">
                 <div class="segment-text" id="laptop-text">
-                    placeholder for laptop
+                    around the end of middle school and the start of high school, i got tired of being limited by ti and c64 basic.
+                    my school did not offer any programming classes, so i started to teach myself python.
+                    while i did enjoy using python, i strayed away and started learning html, css, javascript, and php (sadly).
+                    ubiquitous internet access made sharing cool projects with anyone super simple. 
+                    that is why i still enjoy web developement the most, even to this day.
                 </div>
             </segment-piece>
         </transition>
@@ -230,6 +236,12 @@ export default {
         load (amount, total) {
             this.loadProgress = amount / total * 100
         },
+        // handles the on screen keyboard
+        handleOSKeyboard (show) {
+            const input = document.getElementById('input')
+            if (show) input.focus()
+            else input.blur()
+        },
         // #region initBg
         // initializes the three.js background
         initBg () {
@@ -323,7 +335,7 @@ export default {
             monitorPlane.position.set(
                 222.5,
                 421,
-                -102.7
+                -100
             )
             monitorPlane.rotation.y = -10 * (Math.PI / 180)
             scene.add(monitorPlane)
@@ -794,6 +806,13 @@ export default {
             }
         })
 
+        document.addEventListener('dblclick', () => {
+            if (this.sv_cheats === 1) {
+                if (this.segmentIndex == 42) this.segmentIndex = 5
+                else if (this.segmentIndex != 42) this.segmentIndex = 42
+            }
+        })
+
         // sets mobile view var based on aspect ratio
         // desktops with mobile aspect ratio will be affected
         this.mobile = window.innerHeight > window.innerWidth
@@ -823,6 +842,11 @@ export default {
             
             // pauses terminal if not focused on it
             this.terminal.paused = curr !== 5
+
+            // enables/disables on screen keyboard
+            setTimeout(() => {
+                this.handleOSKeyboard(!this.terminal.paused)
+            }, 500)
 
             /**
              * camera positions and rotations based on segment
@@ -1003,7 +1027,7 @@ export default {
                 else {
                     this.camera.tPos = {
                         x: 100,
-                        y: 400,
+                        y: 300,
                         z: 450
                     }
                     this.camera.tRot = {

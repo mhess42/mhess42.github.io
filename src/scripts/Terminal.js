@@ -1,5 +1,5 @@
 class Terminal {
-    history = [`type 'help' for help`]
+    history = [`and that leads you up to now`, `run 'help' for help`]
     input = ''
     path = '~'
     lineHeight = 50
@@ -49,14 +49,20 @@ class Terminal {
 
         switch (cmd) {
             case 'help':
-                this.addLine(`run 'credits' to view the cc attributions`)
-                this.addLine(`run 'vapor' to change in and out of vaporwave mode`)
+                this.addLine(`'repo' - open this site's github page in a new tab`)
+                this.addLine(`'credits' - view the cc attributions`)
+                this.addLine(`'vapor [true/false]' - change in and out of vaporwave mode`)
+                this.addLine(`'sv_cheats [0/1]' - if you've read the readme`)
                 break
             case 'clear':
                 this.history = []
                 break
             case 'echo':
                 this.addLine(args.join(' '))
+                break
+            case 'repo':
+                window.open('https://www.github.com/mhess42/mhess42.github.io', '_blank')
+                this.addLine('opening github repo')
                 break
             case 'vapor':
                 if (!args[0] || (args[0].toLowerCase() !== 'true' && args[0].toLowerCase() !== 'false')) {
