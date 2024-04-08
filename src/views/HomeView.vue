@@ -5,8 +5,6 @@
         <div id="bg"></div>
         <!-- canvas for monitor screen texture -->
         <canvas id="monitor-canvas" width="1280" height="720"></canvas>
-        <!-- used to invoke on screen keyboard on mobile -->
-        <input id="input" style="opacity: 0" />
         <!-- shown while models are loading -->
         <transition name="fade">
             <div id="loading-screen" v-if="!loaded">
@@ -235,12 +233,6 @@ export default {
         // handles the loading progress of models
         load (amount, total) {
             this.loadProgress = amount / total * 100
-        },
-        // handles the on screen keyboard
-        handleOSKeyboard (show) {
-            const input = document.getElementById('input')
-            if (show) input.focus()
-            else input.blur()
         },
         // #region initBg
         // initializes the three.js background
@@ -753,6 +745,10 @@ export default {
     // #endregion methods
     // #region mounted
     mounted () {
+        // sets mobile view var based on aspect ratio
+        // desktops with mobile aspect ratio will be affected
+        this.mobile = window.innerHeight > window.innerWidth
+
         // initializes the three.js background
         this.initBg()
 
@@ -761,7 +757,8 @@ export default {
             document.getElementById('monitor-canvas').getContext('2d'),
             1280, 
             720,
-            this.termCallback
+            this.termCallback,
+            this.mobile
         )
         this.terminal.init()
         this.terminal.paused = true
@@ -774,7 +771,7 @@ export default {
         // touchend listener to update vars for tracking touchscreen swipes
         document.addEventListener('touchend', e => {
             this.touchYEnd = e.changedTouches[0].screenY
-            if (this.sv_cheats == 0) this.handleSwipe()
+            this.handleSwipe()
         })
 
         // keydown listener for arrow key navigation
@@ -813,10 +810,6 @@ export default {
             }
         })
 
-        // sets mobile view var based on aspect ratio
-        // desktops with mobile aspect ratio will be affected
-        this.mobile = window.innerHeight > window.innerWidth
-
         // changes initial camera position and rotation if in mobile view
         if (this.mobile) {
             this.camera.pos = {
@@ -842,11 +835,6 @@ export default {
             
             // pauses terminal if not focused on it
             this.terminal.paused = curr !== 5
-
-            // enables/disables on screen keyboard
-            setTimeout(() => {
-                this.handleOSKeyboard(!this.terminal.paused)
-            }, 500)
 
             /**
              * camera positions and rotations based on segment

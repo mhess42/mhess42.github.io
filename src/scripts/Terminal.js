@@ -1,16 +1,21 @@
 class Terminal {
-    history = [`and that leads you up to now`, `run 'help' for help`]
+    history = []
     input = ''
     path = '~'
     lineHeight = 50
     cursorVisible = true
     paused = false
 
-    constructor (ctx, width, height, callback) {
+    constructor (ctx, width, height, callback, mobile) {
         this.ctx = ctx
         this.ctx.width = width
         this.ctx.height = height
         this.callback = callback
+        this.mobile = mobile
+
+        this.addLine('and that leads you up to now')
+        if (this.mobile) this.addLine('visit this site on desktop to interact with this terminal')
+        else this.addLine(`run 'help' for help`)
     }
 
     init () {
