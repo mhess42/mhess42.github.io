@@ -20,6 +20,7 @@
 
 * {
   overscroll-behavior: none;
+  overflow: hidden;
 }
 
 #app {
