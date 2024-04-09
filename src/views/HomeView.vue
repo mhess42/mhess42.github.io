@@ -1,32 +1,55 @@
 <template>
+    <!-- #tag home wrapper -->
     <div id="home-wrapper">
+        <!-- leader points positioned for leader lines -->
         <div class="leader-point" id="leader-1"></div>
         <div class="leader-point" id="leader-2"></div>
         <div class="leader-point" id="leader-3"></div>
         <div class="leader-point" id="leader-4"></div>
         <div class="leader-point" id="leader-5"></div>
+
+        <!-- page header -->
         <div id="head-wrapper">
             madeline hess
+        </div>
+
+        <!-- page body -->
+        <div id="body-wrapper">
+            <div class="card">
+                <div class="card-header">check out my github</div>
+                <div class="card-body">
+                    <img id="gh-img" src="assets/images/github.png" />
+                </div>
+            </div>
+        </div>
+
+        <!-- page footer -->
+        <div id="foot-wrapper">
+            nerd, loser, developer
         </div>
     </div>
 </template>
 
 <script>
 import LeaderLine from 'leader-line-new'
-// import CardPiece from '@/components/CardPiece.vue';
 export default {
     name: 'HomeView',
     components: {
-        // CardPiece
+
     },
+    // #tag data
     data () {
         return {
 
         }
     },
+    // #tag methods
     methods: {
+        // hides a provided leader line
+        // line: the leader line object
+        // index: the index in the order of which the leader line appears
+        // duration: the duration in ms
         hideLine (line, index, duration) {
-            // const lineEl = document.querySelectorAll('.leader-line')[index]
             const len = document.querySelectorAll(`.leader-line > defs > path:nth-of-type(1)`)[index].getTotalLength()
             const el = document.querySelectorAll(`.leader-line > g > use:nth-of-type(1)`)[index]
             el.style.transitionDuration = `${duration}ms`
@@ -46,7 +69,9 @@ export default {
             }, 1)
         }
     },
+    // #tag mounted
     mounted () {
+        // settings to apply to each leader line
         const settings = {
             'startPlug': 'behind',
             'endPlug': 'behind',
@@ -55,6 +80,8 @@ export default {
             'hide': true
         }
 
+        // #region leader lines
+        // define leader lines
         const line1 = new LeaderLine(
             document.getElementById('leader-1'),
             document.getElementById('leader-2'),
@@ -64,7 +91,6 @@ export default {
                 'endSocketGravity': [0, 0],
             }
         )
-        line1.id = 'line-1'
 
         const line2 = new LeaderLine(
             document.getElementById('leader-2'),
@@ -73,7 +99,6 @@ export default {
                 ...settings
             }
         )
-        line2.id = 'line-2'
 
         const line3 = new LeaderLine(
             document.getElementById('leader-3'),
@@ -96,7 +121,9 @@ export default {
                 'startPlugSize': .1
             }
         )
+        // #endregion leader lines
 
+        // animate the showing and hiding of each line
         line1.show('draw', {duration: 500, timing: 'linear'})
         setTimeout(() => {
             this.hideLine(line1, '0', 500)
@@ -107,6 +134,9 @@ export default {
                 setTimeout(() => {
                     this.hideLine(line3, '2', 500)
                     line4.show('draw', {duration: 500, timing: 'linear'})
+                    setTimeout(() => {
+                        this.hideLine(line4, '3', 500)
+                    }, 500)
                 }, 500)
             }, 500)
         }, 500)
@@ -114,6 +144,7 @@ export default {
 }
 </script>
 
+<!-- #region styling -->
 <style scoped>
 * {
     font-family: ubuntu;
@@ -122,16 +153,37 @@ export default {
 /** animations */
 
 @keyframes head-intro {
-    0%, 50% {
+    0%, 30% {
         opacity: 0;
-        margin-top: -20vh;
+        top: -20vh;
     }
-    100% {
+    50% {
         opacity: 1;
-        margin-top: 0px;
+        top: 0px;
     }
 }
 
+@keyframes body-intro {
+    0%, 80% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes foot-intro {
+    0%, 75% {
+        opacity: 0;
+        right: 0px;
+    }
+    100% {
+        opacity: 1;
+        right: 1em;
+    }
+}
+
+/** #tag page stylings */
 /** home stylings */
 
 #home-wrapper {
@@ -146,8 +198,66 @@ export default {
 #head-wrapper {
     font-size: 12vw;
     color: white;
-    animation: head-intro 1s linear;
+    animation: head-intro 2s linear;
+    width: 100vw;
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0px;
+    left: 0px;
 }
+
+#body-wrapper {
+    width: 100vw;
+    height: 60vh;
+    padding: 5vh;
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    display: flex;
+    justify-content: space-around;
+    animation: body-intro 3.5s linear;
+}
+
+
+#foot-wrapper {
+    font-size: 3em;
+    color: white;
+    position: fixed;
+    bottom: 1em;
+    right: 1em;
+    animation: foot-intro 3s linear;
+}
+
+/** card stylings */
+
+.card {
+    background-color: white;
+    border-radius: 1em;
+    width: 20vw;
+    height: 23vw;
+    cursor: pointer;
+}
+
+.card-header {
+    color: black;
+    font-size: 1.6em;
+    padding: 1em;
+}
+
+.card-body {
+    width: calc(100% - .25em);
+    height: 70%;
+    padding: .5em;
+    padding-top: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+ #gh-img {
+    width: 70%;
+ }
 
 /** leader line stylings */
 
@@ -182,5 +292,5 @@ export default {
     bottom: 2px;
     right: 20vh;
 }
-
+/** #endregion styling */
 </style>
