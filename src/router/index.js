@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import TimelineView from '../views/TimelineView.vue'
 
 const routes = [
   // home view is the interactive timeline
@@ -9,6 +10,11 @@ const routes = [
     name: 'home',
     component: HomeView
   },
+  {
+    path: '/timeline',
+    name: 'timeline',
+    component: TimelineView
+  }
 ]
 
 const router = createRouter({
