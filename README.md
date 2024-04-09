@@ -1,5 +1,10 @@
 # mhess42.github.io
 
+### install dependencies
+```
+npm install
+```
+
 ### compiles and minifies for production
 ```
 vue build
