@@ -7,6 +7,7 @@
         <div class="leader-point" id="leader-3"></div>
         <div class="leader-point" id="leader-4"></div>
         <div class="leader-point" id="leader-5"></div>
+        <div class="leader-point" id="leader-6"></div>
 
         <!-- page header -->
         <div id="head-wrapper">
@@ -26,6 +27,9 @@
             <!-- timeline card -->
             <div class="card" @click="linkTimeline()">
                 <div class="card-header">my code timeline</div>
+                <div class="card-body">
+                    <font-awesome-icon id="timeline-icon" :icon="['fas', 'timeline']" />
+                </div>
             </div>
 
             <!-- filler card for now -->
@@ -43,15 +47,17 @@
 
 <script>
 import LeaderLine from 'leader-line-new'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 export default {
     name: 'HomeView',
     components: {
-
+        FontAwesomeIcon
     },
     // #tag data
     data () {
         return {
-
+            // whether on mobile device
+            mobile: false
         }
     },
     // #tag methods
@@ -90,24 +96,32 @@ export default {
     },
     // #tag mounted
     mounted () {
+        // determines if on mobile device
+        this.mobile = window.innerHeight > window.innerWidth
+
         // settings to apply to each leader line
         const settings = {
-            'startPlug': 'behind',
-            'endPlug': 'behind',
+            'startPlug': 'square',
+            'endPlug': 'square',
             'path': 'magnet',
             'color': 'white',
-            'hide': true
+            'hide': true,
+            'endPlugSize': .01,
+            'startPlugSize': .01
         }
 
         // #region leader lines
         // define leader lines
+
+        let grav = 240
+        if (this.mobile) grav = 60
+
         const line1 = new LeaderLine(
             document.getElementById('leader-1'),
             document.getElementById('leader-2'),
             {
                 ...settings,
-                'startSocketGravity': [0, 220],
-                'endSocketGravity': [0, 0],
+                'startSocketGravity': [0, grav],
             }
         )
 
@@ -134,10 +148,14 @@ export default {
             {
                 ...settings,
                 'startSocketGravity': [0, 160],
-                'endPlug': 'disc',
-                'endPlugSize': .1,
-                'startPlug': 'disc',
-                'startPlugSize': .1
+            }
+        )
+
+        const line5 = new LeaderLine(
+            document.getElementById('leader-5'),
+            document.getElementById('leader-6'),
+            {
+                ...settings,
             }
         )
         // #endregion leader lines
@@ -155,14 +173,19 @@ export default {
                     line4.show('draw', {duration: 500, timing: 'linear'})
                     setTimeout(() => {
                         this.hideLine(line4, '3', 500)
+                        line5.show('draw', {duration: 500, timing: 'linear'})
                         setTimeout(() => {
-                            // remove lines after all animation is complete
-                            // makes animation fluid on home load without page refresh
-                            line1.remove()
-                            line2.remove()
-                            line3.remove()
-                            line4.remove()
-                        }, 1000)
+                            this.hideLine(line5, '4', 500)
+                            setTimeout(() => {
+                                // remove lines after all animation is complete
+                                // makes animation fluid on home load without page refresh
+                                line1.remove()
+                                line2.remove()
+                                line3.remove()
+                                line4.remove()
+                                line5.remove()
+                            }, 1000)
+                        }, 500)
                     }, 500)
                 }, 500)
             }, 500)
@@ -191,10 +214,10 @@ export default {
 }
 
 @keyframes body-intro {
-    0%, 80% {
+    0%, 37% {
         opacity: 0;
     }
-    100% {
+    77% {
         opacity: 1;
     }
 }
@@ -274,7 +297,7 @@ export default {
 }
 
 .card-body {
-    width: calc(100% - .25em);
+    width: calc(100% - 1em);
     height: 70%;
     padding: .5em;
     padding-top: 0px;
@@ -282,10 +305,42 @@ export default {
     justify-content: center;
     align-items: center;
 }
- #gh-img {
-    width: 70%;
- }
 
+#gh-img {
+    width: 70%;
+}
+
+#timeline-icon {
+    font-size: 10em;
+    color: black;
+}
+
+/** mobile stylings */
+
+@media screen and (max-device-width: 1000px) {
+    #foot-wrapper {
+        font-size: 2em;
+    }
+
+    #body-wrapper {
+        max-width: 100vw;
+        overflow-x: scroll;
+        justify-content: flex-start;
+        padding: 0px;
+        height: 100vh;
+        align-items: center;
+        scroll-snap-type: x mandatory;
+        scroll-padding: 5vw;
+    }
+
+    .card {
+        scroll-snap-align: start;
+        min-width: 90vw;
+        height: 93vw;
+        margin: 5vw;
+    }
+
+}
 /** leader line stylings */
 
 .leader-point {
@@ -301,12 +356,12 @@ export default {
 }
 
 #leader-2 {
-    top: 30%;
-    left: 20vw;
+    top: 15vw;
+    left: 15vw;
 }
 
 #leader-3 {
-    top: 30%;
+    top: 15vw;
     right: 2px;
 }
 
@@ -318,6 +373,11 @@ export default {
 #leader-5 {
     bottom: 2px;
     right: 20vh;
+}
+
+#leader-6 {
+    bottom: 2px;
+    left: 2px;
 }
 /** #endregion styling */
 </style>
