@@ -15,11 +15,22 @@
 
         <!-- page body -->
         <div id="body-wrapper">
-            <div class="card">
+            <!-- gh card -->
+            <div class="card" @click="linkGH()">
                 <div class="card-header">check out my github</div>
                 <div class="card-body">
                     <img id="gh-img" src="assets/images/github.png" />
                 </div>
+            </div>
+
+            <!-- timeline card -->
+            <div class="card" @click="linkTimeline()">
+                <div class="card-header">my code timeline</div>
+            </div>
+
+            <!-- filler card for now -->
+            <div class="card">
+                <div class="card-header">filler card for now</div>
             </div>
         </div>
 
@@ -67,6 +78,14 @@ export default {
                     el.style.strokeDasharray = 'none';
                 }, duration)
             }, 1)
+        },
+        // opens gh in new tab
+        linkGH () {
+            window.open('https://github.com/mhess42', '_blank')
+        },
+        // redirects to timeline
+        linkTimeline () {
+            this.$router.push('/timeline')
         }
     },
     // #tag mounted
@@ -136,6 +155,14 @@ export default {
                     line4.show('draw', {duration: 500, timing: 'linear'})
                     setTimeout(() => {
                         this.hideLine(line4, '3', 500)
+                        setTimeout(() => {
+                            // remove lines after all animation is complete
+                            // makes animation fluid on home load without page refresh
+                            line1.remove()
+                            line2.remove()
+                            line3.remove()
+                            line4.remove()
+                        }, 1000)
                     }, 500)
                 }, 500)
             }, 500)
