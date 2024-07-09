@@ -1,10 +1,9 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import TimelineView from '../views/TimelineView.vue'
+import ResumeView from '../views/ResumeView.vue'
 
 const routes = [
-  // home view is the interactive timeline
-  // current landing view
   {
     path: '/',
     name: 'home',
@@ -14,11 +13,16 @@ const routes = [
     path: '/timeline',
     name: 'timeline',
     component: TimelineView
+  },
+  {
+    path: '/resume',
+    name: 'resume',
+    component: ResumeView
   }
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes
 })
 
