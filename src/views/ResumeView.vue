@@ -1,8 +1,15 @@
 <template>
     <div class="resume-wrapper">
         <resume-page id="heaven">
-            <resume-item image="assets/images/js.png">
-                <h3>javascript</h3>
+            <resume-item title="html" image="assets/images/html.png">
+            </resume-item>
+            <resume-item title="css" image="assets/images/css.svg">
+            </resume-item>
+            <resume-item title="javascript" image="assets/images/js.png">
+            </resume-item>
+            <resume-item title="python" image="assets/images/python.png">
+            </resume-item>
+            <resume-item title="vue" image="assets/images/vue.png">
             </resume-item>
         </resume-page>
         <resume-page id="alright">
